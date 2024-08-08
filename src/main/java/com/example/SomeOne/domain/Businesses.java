@@ -1,9 +1,7 @@
 package com.example.SomeOne.domain;
 
 import com.example.SomeOne.domain.enums.Business_category;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,4 +19,8 @@ public class Businesses {
     private String operating_hours;
     private String closed_days;
     private String phone_number;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "island_id")
+    private Island island;
 }

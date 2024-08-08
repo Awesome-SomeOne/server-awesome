@@ -21,9 +21,11 @@ public class TravelPlans {
     private LocalDateTime start_date;
     private LocalDateTime end_date;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "island_id")
+    private Island island;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "business_id")
     private Businesses business;
-
-    private String custom_text;
 }

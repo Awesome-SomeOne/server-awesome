@@ -1,8 +1,6 @@
 package com.example.SomeOne.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,4 +18,8 @@ public class Users {
     private String nickname;
     private String profile_image;
     private Boolean social_login;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "island_id")
+    private Island island;
 }
