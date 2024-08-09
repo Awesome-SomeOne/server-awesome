@@ -1,7 +1,9 @@
 package com.example.SomeOne.service;
 
 import com.example.SomeOne.domain.Businesses;
+import com.example.SomeOne.domain.enums.Business_category;
 import com.example.SomeOne.dto.Businesses.response.FindBusinessesResponse;
+import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
 import com.example.SomeOne.repository.BusinessesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,15 @@ public class BusinessesService {
 
         return businessesList.stream()
                 .map(business -> new FindBusinessesResponse(business.getBusiness_id(), business.getBusiness_name(), business.getAddress(),
+                        business.getBusiness_type())).collect(Collectors.toList());
+    }
+
+    public List<RecommendPlaceResponse> recommendPlace(Long islandId, String category) {
+        List<Businesses> businessesList = businessesRepository.findByIslandIdAndBusinessType(islandId,
+                Business_category.valueOf(category));
+
+        return businessesList.stream()
+                .map(business -> new RecommendPlaceResponse(business.getBusiness_id(), business.getBusiness_name(), business.getAddress(),
                         business.getBusiness_type())).collect(Collectors.toList());
     }
 }
