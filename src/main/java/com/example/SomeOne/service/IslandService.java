@@ -1,6 +1,7 @@
 package com.example.SomeOne.service;
 
 import com.example.SomeOne.domain.Island;
+import com.example.SomeOne.dto.TravelPlans.response.FindIslandResponse;
 import com.example.SomeOne.repository.IslandRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,15 @@ public class IslandService {
 
     private final IslandRepository islandRepository;
 
-    public List<String> findIsland(String keyword) {
-        return islandRepository.findByKeyword(keyword).stream().map(i -> i.getIsland_name()).collect(Collectors.toList());
+    public List<FindIslandResponse> findIsland(String keyword) {
+        List<Island> islandList = islandRepository.findByKeyword(keyword);
+
+        return islandList.stream()
+                .map(island -> new FindIslandResponse(island.getIsland_id(), island.getIsland_name(),
+                        island.getAddress())).collect(Collectors.toList());
     }
 
-    public Island findByName(String name) {
-        return islandRepository.findByIslandName(name);
+    public Island findById(Long id) {
+        return islandRepository.findById(id).orElseThrow(() -> new IllegalArgumentException());
     }
 }

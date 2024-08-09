@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TravelPlanRequest {
-    private String islandName;
+    private Long islandId;
     private LocalDate startDate;
     private LocalDate endDate;
     private String planName;

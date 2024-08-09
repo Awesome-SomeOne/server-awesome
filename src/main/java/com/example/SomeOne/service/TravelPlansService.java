@@ -19,7 +19,7 @@ public class TravelPlansService {
 
     @Transactional
     public void save(TravelPlanRequest request) {
-        Island island = islandService.findByName(request.getIslandName());
+        Island island = islandService.findById(request.getIslandId());
 
         TravelPlans travelPlan = new TravelPlans(new Users(), request.getPlanName(), request.getStartDate(),
                 request.getEndDate(), island);
