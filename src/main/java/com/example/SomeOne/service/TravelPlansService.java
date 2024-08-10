@@ -45,4 +45,8 @@ public class TravelPlansService {
         TravelPlans plan = travelPlansRepository.findById(planId).orElseThrow(() -> new IllegalArgumentException());
         travelPlansRepository.delete(plan);
     }
+
+    public TravelPlans findById(Long id) {
+        return travelPlansRepository.findById(id).orElseThrow(() -> new IllegalArgumentException());
+    }
 }

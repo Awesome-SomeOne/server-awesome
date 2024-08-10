@@ -35,4 +35,8 @@ public class BusinessesService {
                 .map(business -> new RecommendPlaceResponse(business.getBusiness_id(), business.getBusiness_name(), business.getAddress(),
                         business.getBusiness_type())).collect(Collectors.toList());
     }
+
+    public Businesses findById(Long id) {
+        return businessesRepository.findById(id).orElseThrow(() -> new IllegalArgumentException());
+    }
 }

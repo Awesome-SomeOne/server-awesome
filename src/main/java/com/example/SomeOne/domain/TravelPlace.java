@@ -16,20 +16,30 @@ public class TravelPlace {
     @GeneratedValue
     private Long place_id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private TravelPlans travelPlans;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "business_id")
     private Businesses businesses;
 
     private LocalDate date;
 
+    private Integer order;
     @Builder
-    public TravelPlace(TravelPlans travelPlans, Businesses businesses, LocalDate date) {
+    public TravelPlace(TravelPlans travelPlans, Businesses businesses, LocalDate date, Integer order) {
         this.travelPlans = travelPlans;
         this.businesses = businesses;
         this.date = date;
+        this.order = order;
+    }
+
+    public void plusOrder() {
+        this.order += 1;
+    }
+
+    public void minusOrder() {
+        this.order -= 1;
     }
 }

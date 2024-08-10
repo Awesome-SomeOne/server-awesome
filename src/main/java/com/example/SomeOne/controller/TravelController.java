@@ -4,18 +4,16 @@ import com.example.SomeOne.dto.Businesses.request.FindBusinessesRequest;
 import com.example.SomeOne.dto.Businesses.request.RecommendPlaceRequest;
 import com.example.SomeOne.dto.Businesses.response.FindBusinessesResponse;
 import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
-import com.example.SomeOne.dto.TravelPlans.request.DeletePlanRequest;
-import com.example.SomeOne.dto.TravelPlans.request.FindIslandRequest;
-import com.example.SomeOne.dto.TravelPlans.request.TravelPlanRequest;
+import com.example.SomeOne.dto.TravelPlans.request.*;
 import com.example.SomeOne.dto.TravelPlans.response.FindIslandResponse;
 import com.example.SomeOne.dto.TravelPlans.response.GetPlanResponse;
 import com.example.SomeOne.service.BusinessesService;
 import com.example.SomeOne.service.IslandService;
+import com.example.SomeOne.service.TravelPlaceService;
 import com.example.SomeOne.service.TravelPlansService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -26,6 +24,7 @@ public class TravelController {
     private final IslandService islandService;
     private final TravelPlansService travelPlansService;
     private final BusinessesService businessesService;
+    private final TravelPlaceService travelPlaceService;
 
     @GetMapping("/findIsland")
     public List<FindIslandResponse> findIsland(@RequestBody FindIslandRequest request) {
@@ -51,6 +50,22 @@ public class TravelController {
     public List<GetPlanResponse> getPlan(@RequestBody Long userId) {
         // login 관련해서 다른 개발자와 코드 merge 후 수정
         return travelPlansService.getPlan(userId);
+    }
+
+    @PostMapping("/addPlace")
+    public void addPlace(@RequestBody AddPlaceRequest request) {
+        travelPlaceService.addPlace(request.getTravelPlanId(), request.getBusinessId(), request.getDate());
+    }
+
+    @DeleteMapping("/deletePlace")
+    public void deletePlace(@RequestBody DeletePlaceRequest request) {
+        travelPlaceService.deletePlace(request.getTravelPlaceId());
+    }
+
+    @PostMapping("/update/date")
+    public void updateDate(@RequestBody UpdateDateRequest request) {
+        travelPlaceService.updateDate(request.getTravelPlaceId(), request.getTravelPlanId(), request.getBusinessId(),
+                request.getDate());
     }
 
     @DeleteMapping("/delete/travel")
