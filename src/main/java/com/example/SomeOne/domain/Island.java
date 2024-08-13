@@ -1,6 +1,5 @@
 package com.example.SomeOne.domain;
 
-import com.example.SomeOne.domain.enums.Business_category;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;

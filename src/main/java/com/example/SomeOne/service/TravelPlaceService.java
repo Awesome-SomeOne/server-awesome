@@ -36,7 +36,7 @@ public class TravelPlaceService {
 
     @Transactional
     public void deletePlace(Long travelPlaceId) {
-        TravelPlace travelPlace = travelPlaceRepository.findById(travelPlaceId).orElseThrow(() -> new IllegalArgumentException());
+        TravelPlace travelPlace = findById(travelPlaceId);
         Long travelPlanId = travelPlace.getTravelPlans().getPlan_id();
 
         LocalDate date = travelPlace.getDate();
@@ -58,5 +58,44 @@ public class TravelPlaceService {
     public void updateDate(Long travelPlaceId, Long travelPlanId, Long businessId, LocalDate date) {
         deletePlace(travelPlaceId);
         addPlace(travelPlanId, businessId, date);
+    }
+
+    @Transactional
+    public void changeOrder(Long travelPlaceId, Integer changeOrder) {
+        TravelPlace travelPlace = findById(travelPlaceId);
+        Long travelPlanId = travelPlace.getTravelPlans().getPlan_id();
+
+        LocalDate date = travelPlace.getDate();
+        List<TravelPlace> placeList = travelPlaceRepository.
+                findAllByTravelPlans_PlanIdAndDateOrderByOrderAsc(travelPlanId, date);
+
+        Integer currentOrder = travelPlace.getOrder();
+        if (changeOrder < currentOrder) {
+            // changeOrder가 currentOrder보다 작은 경우, 중간의 모든 순서를 1씩 증가시킴
+            for (TravelPlace place : placeList) {
+                if (place.getOrder() >= changeOrder && place.getOrder() < currentOrder) {
+                    place.plusOrder();
+                }
+            }
+        } else if (changeOrder > currentOrder) {
+            // changeOrder가 currentOrder보다 큰 경우, 중간의 모든 순서를 1씩 감소시킴
+            for (TravelPlace place : placeList) {
+                if (place.getOrder() > currentOrder && place.getOrder() <= changeOrder) {
+                    place.minusOrder();
+                }
+            }
+        }
+
+        travelPlace.changeOrder(changeOrder);
+
+        travelPlaceRepository.save(travelPlace);
+    }
+
+    public TravelPlace findById(Long travelPlaceId) {
+        return travelPlaceRepository.findById(travelPlaceId).orElseThrow(() -> new IllegalArgumentException());
+    }
+
+    public List<TravelPlace> findByTravelPlan(Long planId) {
+        return travelPlaceRepository.findAllByTravelPlans_PlanIdOrderByDateAsc(planId);
     }
 }

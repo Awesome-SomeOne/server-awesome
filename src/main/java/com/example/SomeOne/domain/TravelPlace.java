@@ -42,4 +42,8 @@ public class TravelPlace {
     public void minusOrder() {
         this.order -= 1;
     }
+
+    public void changeOrder(Integer changeOrder) {
+        this.order = changeOrder;
+    }
 }

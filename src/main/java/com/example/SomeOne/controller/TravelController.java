@@ -6,7 +6,8 @@ import com.example.SomeOne.dto.Businesses.response.FindBusinessesResponse;
 import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
 import com.example.SomeOne.dto.TravelPlans.request.*;
 import com.example.SomeOne.dto.TravelPlans.response.FindIslandResponse;
-import com.example.SomeOne.dto.TravelPlans.response.GetPlanResponse;
+import com.example.SomeOne.dto.TravelPlans.response.GetTravelPlanResponse;
+import com.example.SomeOne.dto.TravelPlans.response.GetPlansResponse;
 import com.example.SomeOne.service.BusinessesService;
 import com.example.SomeOne.service.IslandService;
 import com.example.SomeOne.service.TravelPlaceService;
@@ -46,10 +47,15 @@ public class TravelController {
         return businessesService.recommendPlace(request.getIslandId(), request.getCategory());
     }
 
-    @GetMapping("/plan")
-    public List<GetPlanResponse> getPlan(@RequestBody Long userId) {
+    @GetMapping("/plans")
+    public List<GetPlansResponse> getPlans(@RequestBody Long userId) {
         // login 관련해서 다른 개발자와 코드 merge 후 수정
         return travelPlansService.getPlan(userId);
+    }
+
+    @GetMapping("/plan")
+    public GetTravelPlanResponse getPlan(@RequestBody Long planId) {
+        return travelPlansService.findTravelPlan(planId);
     }
 
     @PostMapping("/addPlace")
@@ -66,6 +72,11 @@ public class TravelController {
     public void updateDate(@RequestBody UpdateDateRequest request) {
         travelPlaceService.updateDate(request.getTravelPlaceId(), request.getTravelPlanId(), request.getBusinessId(),
                 request.getDate());
+    }
+
+    @PatchMapping("/change/order")
+    public void changeOrder(@RequestBody ChangeOrderRequest request) {
+        travelPlaceService.changeOrder(request.getTravelPlaceId(), request.getOrder());
     }
 
     @DeleteMapping("/delete/travel")
