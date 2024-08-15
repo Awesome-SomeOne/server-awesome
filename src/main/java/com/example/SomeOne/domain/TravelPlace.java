@@ -26,24 +26,24 @@ public class TravelPlace {
 
     private LocalDate date;
 
-    private Integer order;
+    private Integer placeOrder;
     @Builder
-    public TravelPlace(TravelPlans travelPlans, Businesses businesses, LocalDate date, Integer order) {
+    public TravelPlace(TravelPlans travelPlans, Businesses businesses, LocalDate date, Integer placeOrder) {
         this.travelPlans = travelPlans;
         this.businesses = businesses;
         this.date = date;
-        this.order = order;
+        this.placeOrder = placeOrder;
     }
 
     public void plusOrder() {
-        this.order += 1;
+        this.placeOrder += 1;
     }
 
     public void minusOrder() {
-        this.order -= 1;
+        this.placeOrder -= 1;
     }
 
     public void changeOrder(Integer changeOrder) {
-        this.order = changeOrder;
+        this.placeOrder = changeOrder;
     }
 }

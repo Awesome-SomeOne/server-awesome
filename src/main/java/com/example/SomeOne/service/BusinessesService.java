@@ -24,7 +24,7 @@ public class BusinessesService {
 
         return businessesList.stream()
                 .map(business -> new FindBusinessesResponse(business.getBusiness_id(), business.getBusiness_name(), business.getAddress(),
-                        business.getBusiness_type())).collect(Collectors.toList());
+                        business.getBusinessType())).collect(Collectors.toList());
     }
 
     public List<RecommendPlaceResponse> recommendPlace(Long islandId, String category) {
@@ -33,7 +33,7 @@ public class BusinessesService {
 
         return businessesList.stream()
                 .map(business -> new RecommendPlaceResponse(business.getBusiness_id(), business.getBusiness_name(), business.getAddress(),
-                        business.getBusiness_type())).collect(Collectors.toList());
+                        business.getBusinessType())).collect(Collectors.toList());
     }
 
     public Businesses findById(Long id) {

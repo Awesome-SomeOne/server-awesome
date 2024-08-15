@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface IslandRepository extends JpaRepository<Island, Long> {
 
-    @Query("SELECT i FROM Island i WHERE i.island_name LIKE %:keyword%")
+    @Query("SELECT i FROM Island i WHERE i.name LIKE %:keyword%")
     List<Island> findByKeyword(@Param("keyword") String keyword);
 
-    Island findByIslandName(String islandName);
+    Island findByName(String name);
 }

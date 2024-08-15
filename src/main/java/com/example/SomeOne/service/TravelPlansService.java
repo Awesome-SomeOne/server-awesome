@@ -21,6 +21,7 @@ public class TravelPlansService {
     private final IslandService islandService;
     private final TravelPlansRepository travelPlansRepository;
     private final TravelPlaceService travelPlaceService;
+    private final UserService userService;
 
     @Transactional
     public void save(TravelPlanRequest request) {
@@ -33,10 +34,11 @@ public class TravelPlansService {
     }
 
     public List<GetPlansResponse> getPlan(Long userId) {
-        List<TravelPlans> planList = travelPlansRepository.findByUser_IdOrderByStart_dateDesc(userId);
+        Users user = userService.findById(userId);
+        List<TravelPlans> planList = travelPlansRepository.findByUserOrderByStartDateDesc(user);
 
-        return planList.stream().map(p -> new GetPlansResponse(p.getPlan_id(), p.getPlan_name(), p.getIsland().getAddress(),
-                p.getStart_date(), p.getEnd_date(), p.getStatus())).collect(Collectors.toList());
+        return planList.stream().map(p -> new GetPlansResponse(p.getPlanId(), p.getPlan_name(), p.getIsland().getAddress(),
+                p.getStartDate(), p.getEnd_date(), p.getStatus())).collect(Collectors.toList());
     }
 
     @Transactional
@@ -52,12 +54,12 @@ public class TravelPlansService {
     public GetTravelPlanResponse findTravelPlan(Long planId) {
         TravelPlans travelPlans = findById(planId);
         String planName = travelPlans.getPlan_name();
-        String islandName = travelPlans.getIsland().getIsland_name();
+        String islandName = travelPlans.getIsland().getName();
         List<TravelPlace> travelPlaceList = travelPlaceService.findByTravelPlan(planId);
 
         List<TravelPlaceResponse> responseList = travelPlaceList.stream().map((p -> new TravelPlaceResponse(
                 p.getPlace_id(), p.getBusinesses().getBusiness_name(),
-                p.getBusinesses().getAddress(), p.getBusinesses().getBusiness_type(), p.getDate(), p.getOrder(),
+                p.getBusinesses().getAddress(), p.getBusinesses().getBusinessType(), p.getDate(), p.getPlaceOrder(),
                 p.getBusinesses().getImg_url()))).collect(Collectors.toList());
 
         return new GetTravelPlanResponse(planName, islandName, responseList);

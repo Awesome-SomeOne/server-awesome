@@ -16,7 +16,7 @@ import java.util.List;
 public class TravelPlans {
 
     @Id @GeneratedValue
-    private Long plan_id;
+    private Long planId;
 
     @OneToMany(mappedBy = "travelPlans", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TravelPlace> travelPlaces = new ArrayList<>();
@@ -25,7 +25,7 @@ public class TravelPlans {
     @JoinColumn(name = "users_id")
     private Users user;
     private String plan_name;
-    private LocalDate start_date;
+    private LocalDate startDate;
     private LocalDate end_date;
     private TravelStatus status;
 
@@ -34,10 +34,10 @@ public class TravelPlans {
     private Island island;
 
     @Builder
-    public TravelPlans(Users user, String plan_name, LocalDate start_date, LocalDate end_date, Island island) {
+    public TravelPlans(Users user, String plan_name, LocalDate startDate, LocalDate end_date, Island island) {
         this.user = user;
         this.plan_name = plan_name;
-        this.start_date = start_date;
+        this.startDate = startDate;
         this.end_date = end_date;
         this.island = island;
         this.status = TravelStatus.여행전;
