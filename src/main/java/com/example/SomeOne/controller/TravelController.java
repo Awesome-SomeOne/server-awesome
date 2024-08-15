@@ -1,9 +1,12 @@
 package com.example.SomeOne.controller;
 
+import com.example.SomeOne.dto.Businesses.request.FamousPlaceRequest;
 import com.example.SomeOne.dto.Businesses.request.FindBusinessesRequest;
 import com.example.SomeOne.dto.Businesses.request.RecommendPlaceRequest;
+import com.example.SomeOne.dto.Businesses.response.FamousPlaceResponse;
 import com.example.SomeOne.dto.Businesses.response.FindBusinessesResponse;
 import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
+import com.example.SomeOne.dto.TravelPlans.response.RandomIslandResponse;
 import com.example.SomeOne.dto.TravelPlans.request.*;
 import com.example.SomeOne.dto.TravelPlans.response.FindIslandResponse;
 import com.example.SomeOne.dto.TravelPlans.response.GetTravelPlanResponse;
@@ -45,6 +48,16 @@ public class TravelController {
     @GetMapping("/recommend/place")
     public List<RecommendPlaceResponse> recommendPlace(@RequestBody RecommendPlaceRequest request) {
         return businessesService.recommendPlace(request.getIslandId(), request.getCategory());
+    }
+
+    @GetMapping("/recommend/island")
+    public RandomIslandResponse recommendIsland() {
+        return islandService.randomIsland();
+    }
+
+    @GetMapping("/famous/place")
+    public List<FamousPlaceResponse> famousPlace(@RequestBody FamousPlaceRequest request) {
+        return businessesService.famousPlace(request.getIslandId());
     }
 
     @GetMapping("/plans")

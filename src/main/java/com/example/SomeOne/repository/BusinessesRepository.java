@@ -14,4 +14,6 @@ public interface BusinessesRepository extends JpaRepository<Businesses, Long> {
     List<Businesses> findByKeyword(@Param("keyword") String keyword);
 
     List<Businesses> findByIslandIdAndBusinessType(Long islandId, Business_category category);
+
+    List<Businesses> findByIslandId(Long islandId);
 }
