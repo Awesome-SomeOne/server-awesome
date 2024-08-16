@@ -76,6 +76,11 @@ public class TravelController {
         travelPlaceService.addPlace(request.getTravelPlanId(), request.getBusinessId(), request.getDate());
     }
 
+    @PostMapping("/addManyPlace")
+    public void addManyPlace(@RequestBody AddManyPlaceRequest request) {
+        travelPlaceService.addManyPlaces(request.getTravelPlanId(), request.getBusinessIds(), request.getDate());
+    }
+
     @DeleteMapping("/deletePlace")
     public void deletePlace(@RequestBody DeletePlaceRequest request) {
         travelPlaceService.deletePlace(request.getTravelPlaceId());

@@ -37,6 +37,13 @@ public class TravelPlaceService {
     }
 
     @Transactional
+    public void addManyPlaces(Long travelPlanId, List<Long> businessIds, LocalDate date) {
+        for (Long businessId : businessIds) {
+            addPlace(travelPlanId, businessId, date);
+        }
+    }
+
+    @Transactional
     public void deletePlace(Long travelPlaceId) {
         TravelPlace travelPlace = findById(travelPlaceId);
         Long travelPlanId = travelPlace.getTravelPlans().getPlanId();
