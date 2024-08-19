@@ -67,8 +67,8 @@ public class TravelController {
     }
 
     @GetMapping("/plan")
-    public GetTravelPlanResponse getPlan(@RequestBody Long planId) {
-        return travelPlansService.findTravelPlan(planId);
+    public GetTravelPlanResponse getPlan(@RequestBody GetPlanRequest request) {
+        return travelPlansService.findTravelPlan(request.getPlanId());
     }
 
     @PostMapping("/addPlace")
@@ -86,7 +86,7 @@ public class TravelController {
         travelPlaceService.deletePlace(request.getTravelPlaceId());
     }
 
-    @PostMapping("/update/date")
+    @PatchMapping("/update/date")
     public void updateDate(@RequestBody UpdateDateRequest request) {
         travelPlaceService.updateDate(request.getTravelPlaceId(), request.getTravelPlanId(), request.getBusinessId(),
                 request.getDate());

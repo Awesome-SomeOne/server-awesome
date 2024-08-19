@@ -7,9 +7,11 @@ import com.example.SomeOne.dto.TravelPlans.response.GetPlansResponse;
 import com.example.SomeOne.dto.TravelPlans.response.TravelPlaceResponse;
 import com.example.SomeOne.repository.TravelPlansRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,7 @@ public class TravelPlansService {
         List<TravelPlans> planList = travelPlansRepository.findByUserOrderByStartDateDesc(user);
 
         return planList.stream().map(p -> new GetPlansResponse(p.getPlanId(), p.getPlan_name(), p.getIsland().getAddress(),
-                p.getStartDate(), p.getEnd_date(), p.getStatus())).collect(Collectors.toList());
+                p.getStartDate(), p.getEndDate(), p.getStatus())).collect(Collectors.toList());
     }
 
     @Transactional
@@ -63,5 +65,21 @@ public class TravelPlansService {
                 p.getBusinesses().getImg_url()))).collect(Collectors.toList());
 
         return new GetTravelPlanResponse(planName, islandName, responseList);
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * *")
+    public void updateStatus() {
+        List<TravelPlans> startDateList = travelPlansRepository.findByStartDate(LocalDate.now());
+
+        for (TravelPlans plan : startDateList) {
+            plan.startTravel();
+        }
+
+        List<TravelPlans> finishDateList = travelPlansRepository.findByEndDate(LocalDate.now());
+
+        for (TravelPlans plan : finishDateList) {
+            plan.finishTravel();
+        }
     }
 }
