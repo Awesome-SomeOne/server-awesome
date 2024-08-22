@@ -47,4 +47,9 @@ public class TravelPlace {
     public void changeOrder(Integer changeOrder) {
         this.placeOrder = changeOrder;
     }
+
+    public void update(Integer order, LocalDate date) {
+        this.placeOrder = order;
+        this.date = date;
+    }
 }

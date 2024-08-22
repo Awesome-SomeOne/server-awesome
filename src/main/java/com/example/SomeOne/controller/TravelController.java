@@ -97,6 +97,11 @@ public class TravelController {
         travelPlaceService.changeOrder(request.getTravelPlaceId(), request.getOrder());
     }
 
+    @PatchMapping("/update/place")
+    public void updatePlace(@RequestBody List<UpdatePlaceRequest> request) {
+        travelPlaceService.updatePlace(request);
+    }
+
     @DeleteMapping("/delete/travel")
     public void deleteTravel(@RequestBody DeletePlanRequest request) {
         travelPlansService.delete(request.getPlanId());
