@@ -4,15 +4,10 @@ import com.example.SomeOne.dto.TravelRecords.Request.CreateTravelRecordRequest;
 import com.example.SomeOne.dto.TravelRecords.Response.TravelRecordResponse;
 import com.example.SomeOne.service.TravelRecordsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/travel-records")
@@ -21,38 +16,42 @@ public class TravelRecordsController {
 
     private final TravelRecordsService travelRecordsService;
 
-    // 여행 기록 생성
+    /**
+     * 여행 기록 생성 API
+     *
+     * @param images 여행 기록과 함께 업로드할 이미지 목록
+     * @param request 여행 기록 생성에 필요한 데이터
+     * @return 생성된 여행 기록의 응답 객체
+     */
     @PostMapping("/create")
-    public ResponseEntity<TravelRecordResponse> createTravelRecord(
-            @RequestParam("images") List<MultipartFile> images,
-            @ModelAttribute CreateTravelRecordRequest request) {
-
-        // 이미지가 5개를 초과하는지 체크
-        if (images.size() > 5) {
-            return ResponseEntity.badRequest().body(null);
-        }
-
-        TravelRecordResponse response = travelRecordsService.create(images, request);
-        return ResponseEntity.ok(response);
+    public TravelRecordResponse createTravelRecord(@RequestParam("images") List<MultipartFile> images,
+                                                   @ModelAttribute CreateTravelRecordRequest request) {
+        return travelRecordsService.create(images, request);
     }
 
-    // 여행 기록 수정
+    /**
+     * 여행 기록 수정 API
+     *
+     * @param recordId 수정할 여행 기록의 ID
+     * @param newImages 새로 업로드할 이미지 목록 (선택 사항)
+     * @param request 여행 기록 수정에 필요한 데이터
+     * @return 수정된 여행 기록의 응답 객체
+     */
     @PostMapping("/update/{recordId}")
-    public ResponseEntity<TravelRecordResponse> updateTravelRecord(
-            @PathVariable Long recordId,
-            @RequestPart("request") CreateTravelRecordRequest request,
-            @RequestPart(value = "images", required = false) List<MultipartFile> newImages) {
-        TravelRecordResponse response = travelRecordsService.update(recordId, request, newImages);
-        return ResponseEntity.ok(response);
+    public TravelRecordResponse updateTravelRecord(@PathVariable Long recordId,
+                                                   @RequestParam(value = "images", required = false) List<MultipartFile> newImages,
+                                                   @ModelAttribute CreateTravelRecordRequest request) {
+        return travelRecordsService.update(recordId, request, newImages);
     }
 
-    // 여행 기록 삭제
+    /**
+     * 여행 기록 삭제 API
+     *
+     * @param recordId 삭제할 여행 기록의 ID
+     */
     @DeleteMapping("/delete/{recordId}")
-    public ResponseEntity<Map<String, String>> deleteTravelRecord(@PathVariable Long recordId) {
+    public void deleteTravelRecord(@PathVariable Long recordId) {
         travelRecordsService.delete(recordId);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Travel record deleted successfully");
-        return ResponseEntity.ok(response); // or ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
 
     // 공유 가능한 링크를 생성하는 메서드
@@ -63,39 +62,58 @@ public class TravelRecordsController {
         return shareableUrl;
     }
 
-    // 여행 기록 조회
+    /**
+     * 여행 기록 조회 API (ID로 조회)
+     *
+     * @param recordId 조회할 여행 기록의 ID
+     * @return 조회된 여행 기록의 응답 객체
+     */
     @GetMapping("/view/{recordId}")
-    public TravelRecordResponse viewRecord(@PathVariable Long recordId) {
+    public TravelRecordResponse getTravelRecordById(@PathVariable Long recordId) {
         return travelRecordsService.getRecordById(recordId);
     }
 
-    // 사용자별 여행 기록 조회
+    /**
+     * 사용자별 여행 기록 조회 API
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return 조회된 여행 기록 목록
+     */
     @GetMapping("/view-user/{userId}")
-    public ResponseEntity<List<TravelRecordResponse>> getRecordsByUser(@PathVariable Long userId) {
-        List<TravelRecordResponse> records = travelRecordsService.getRecordsByUser(userId);
-        return ResponseEntity.ok(records);
+    public List<TravelRecordResponse> getRecordsByUser(@PathVariable Long userId) {
+        return travelRecordsService.getRecordsByUser(userId);
     }
 
-    // 여행 계획별 여행 기록 조회
+    /**
+     * 여행 계획별 여행 기록 조회 API
+     *
+     * @param planId 조회할 여행 계획의 ID
+     * @return 조회된 여행 기록 목록
+     */
     @GetMapping("/view-plan/{planId}")
-    public ResponseEntity<List<TravelRecordResponse>> getRecordsByPlan(@PathVariable Long planId) {
-        List<TravelRecordResponse> records = travelRecordsService.getRecordsByPlan(planId);
-        return ResponseEntity.ok(records);
+    public List<TravelRecordResponse> getRecordsByPlan(@PathVariable Long planId) {
+        return travelRecordsService.getRecordsByPlan(planId);
     }
 
-    // 사용자별 여행 기록 조회 - publicPrivate:true only
+    /**
+     * 사용자별 공개된 여행 기록 조회 API
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return 조회된 공개된 여행 기록 목록
+     */
     @GetMapping("/view-user-true/{userId}")
-    public ResponseEntity<List<TravelRecordResponse>> getRecordsByUserTrue(@PathVariable Long userId) {
-        List<TravelRecordResponse> records = travelRecordsService.getRecordsByUserTrue(userId);
-        return ResponseEntity.ok(records);
-
+    public List<TravelRecordResponse> getRecordsByUserTrue(@PathVariable Long userId) {
+        return travelRecordsService.getRecordsByUserTrue(userId);
     }
 
-    // 여행 계획별 여행 기록 조회 - publicPrivate:true only
+    /**
+     * 여행 계획별 공개된 여행 기록 조회 API
+     *
+     * @param planId 조회할 여행 계획의 ID
+     * @return 조회된 공개된 여행 기록 목록
+     */
     @GetMapping("/view-plan-true/{planId}")
-    public ResponseEntity<List<TravelRecordResponse>> getRecordsByPlanTrue(@PathVariable Long planId) {
-        List<TravelRecordResponse> records = travelRecordsService.getRecordsByPlanTrue(planId);
-        return ResponseEntity.ok(records);
+    public List<TravelRecordResponse> getRecordsByPlanTrue(@PathVariable Long planId) {
+        return travelRecordsService.getRecordsByPlanTrue(planId);
     }
-
 }

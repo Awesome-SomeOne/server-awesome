@@ -37,6 +37,15 @@ public class TravelRecords {
 
     private Boolean isReported = false; // 신고 상태
 
+    @OneToOne(mappedBy = "travelRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    private IslandReviews islandReview;  // TravelRecords와 연결된 섬 리뷰
+
+    // 기록 생성 시 리뷰 추가
+    public void addIslandReview(IslandReviews islandReview) {
+        this.islandReview = islandReview;
+        islandReview.setTravelRecord(this);
+    }
+
     @Builder
     public TravelRecords(Users user, TravelPlans plan, String recordTitle, String recordContent, Boolean publicPrivate) {
         this.user = user;
