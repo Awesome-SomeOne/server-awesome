@@ -3,6 +3,7 @@ package com.example.SomeOne.service;
 import com.example.SomeOne.domain.*;
 import com.example.SomeOne.dto.TravelRecords.Request.CreateTravelRecordRequest;
 import com.example.SomeOne.dto.TravelRecords.Response.TravelRecordResponse;
+import com.example.SomeOne.dto.TravelRecords.Response.IslandReviewResponse;
 import com.example.SomeOne.exception.ImageStorageException;
 import com.example.SomeOne.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,9 +65,7 @@ public class TravelRecordsService {
         TravelRecords savedRecord = travelRecordsRepository.save(record);
 
         // 섬 리뷰 정보 초기화
-        Long islandReviewId = null;
-        String islandReviewShortReview = null;
-        String islandReviewDetailedReview = null;
+        IslandReviewResponse islandReviewResponse = null;
 
         // 섬 ID가 제공되었을 경우 섬 리뷰 생성
         if (request.getIslandId() != null) {
@@ -82,13 +82,11 @@ public class TravelRecordsService {
 
             islandReview.setTravelRecord(savedRecord);
             IslandReviews savedIslandReview = islandReviewsRepository.save(islandReview);
-            islandReviewId = savedIslandReview.getReviewId();
-            islandReviewShortReview = savedIslandReview.getShortReview();
-            islandReviewDetailedReview = savedIslandReview.getDetailedReview();
+            islandReviewResponse = new IslandReviewResponse(savedIslandReview);
         }
 
         // TravelRecordResponse 객체 생성 및 반환
-        return new TravelRecordResponse(savedRecord, imageUrls.isEmpty() ? null : imageUrls.get(0), islandReviewId, islandReviewShortReview, islandReviewDetailedReview);
+        return new TravelRecordResponse(savedRecord, imageUrls.isEmpty() ? null : imageUrls.get(0), islandReviewResponse);
     }
 
     private String saveImage(MultipartFile image) {
@@ -133,9 +131,7 @@ public class TravelRecordsService {
         TravelRecords updatedRecord = travelRecordsRepository.save(record);
 
         // 섬 리뷰 정보 초기화
-        Long islandReviewId = null;
-        String islandReviewShortReview = null;
-        String islandReviewDetailedReview = null;
+        IslandReviewResponse islandReviewResponse = null;
 
         // 섬 ID가 제공되었을 경우 섬 리뷰 생성
         if (request.getIslandId() != null) {
@@ -152,13 +148,11 @@ public class TravelRecordsService {
 
             islandReview.setTravelRecord(updatedRecord);
             IslandReviews savedIslandReview = islandReviewsRepository.save(islandReview);
-            islandReviewId = savedIslandReview.getReviewId();
-            islandReviewShortReview = savedIslandReview.getShortReview();
-            islandReviewDetailedReview = savedIslandReview.getDetailedReview();
+            islandReviewResponse = new IslandReviewResponse(savedIslandReview);
         }
 
         // TravelRecordResponse 객체 생성 및 반환
-        return new TravelRecordResponse(updatedRecord, updatedRecord.getRecordImages().isEmpty() ? null : updatedRecord.getRecordImages().get(0).getImage_url(), islandReviewId, islandReviewShortReview, islandReviewDetailedReview);
+        return new TravelRecordResponse(updatedRecord, updatedRecord.getRecordImages().isEmpty() ? null : updatedRecord.getRecordImages().get(0).getImage_url(), islandReviewResponse);
     }
 
     @Transactional
@@ -195,20 +189,15 @@ public class TravelRecordsService {
                 .collect(Collectors.toList());
 
         // 섬 리뷰 정보 초기화
-        Long islandReviewId = null;
-        String islandReviewShortReview = null;
-        String islandReviewDetailedReview = null;
+        IslandReviewResponse islandReviewResponse = null;
 
         // 섬 리뷰 정보가 있으면 설정
         if (record.getIslandReview() != null) {
-            IslandReviews islandReview = record.getIslandReview();
-            islandReviewId = islandReview.getReviewId();
-            islandReviewShortReview = islandReview.getShortReview();
-            islandReviewDetailedReview = islandReview.getDetailedReview();
+            islandReviewResponse = new IslandReviewResponse(record.getIslandReview());
         }
 
         // TravelRecordResponse 객체 생성 및 반환
-        return new TravelRecordResponse(record, imageUrls.isEmpty() ? null : imageUrls.get(0), islandReviewId, islandReviewShortReview, islandReviewDetailedReview);
+        return new TravelRecordResponse(record, imageUrls.isEmpty() ? null : imageUrls.get(0), islandReviewResponse);
     }
 
     public List<TravelRecordResponse> getRecordsByUser(Long userId) {
@@ -222,23 +211,16 @@ public class TravelRecordsService {
         // TravelRecordResponse 객체 목록 생성
         return records.stream()
                 .map(record -> {
-                    Long islandReviewId = null;
-                    String islandReviewShortReview = null;
-                    String islandReviewDetailedReview = null;
+                    IslandReviewResponse islandReviewResponse = null;
 
                     // 섬 리뷰 정보가 있으면 설정
                     if (record.getIslandReview() != null) {
-                        IslandReviews islandReview = record.getIslandReview();
-                        islandReviewId = islandReview.getReviewId();
-                        islandReviewShortReview = islandReview.getShortReview();
-                        islandReviewDetailedReview = islandReview.getDetailedReview();
+                        islandReviewResponse = new IslandReviewResponse(record.getIslandReview());
                     }
 
                     return new TravelRecordResponse(record,
                             record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImage_url(),
-                            islandReviewId,
-                            islandReviewShortReview,
-                            islandReviewDetailedReview);
+                            islandReviewResponse);
                 })
                 .collect(Collectors.toList());
     }
@@ -254,23 +236,16 @@ public class TravelRecordsService {
         // TravelRecordResponse 객체 목록 생성
         return records.stream()
                 .map(record -> {
-                    Long islandReviewId = null;
-                    String islandReviewShortReview = null;
-                    String islandReviewDetailedReview = null;
+                    IslandReviewResponse islandReviewResponse = null;
 
                     // 섬 리뷰 정보가 있으면 설정
                     if (record.getIslandReview() != null) {
-                        IslandReviews islandReview = record.getIslandReview();
-                        islandReviewId = islandReview.getReviewId();
-                        islandReviewShortReview = islandReview.getShortReview();
-                        islandReviewDetailedReview = islandReview.getDetailedReview();
+                        islandReviewResponse = new IslandReviewResponse(record.getIslandReview());
                     }
 
                     return new TravelRecordResponse(record,
                             record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImage_url(),
-                            islandReviewId,
-                            islandReviewShortReview,
-                            islandReviewDetailedReview);
+                            islandReviewResponse);
                 })
                 .collect(Collectors.toList());
     }
@@ -286,23 +261,16 @@ public class TravelRecordsService {
         // TravelRecordResponse 객체 목록 생성
         return records.stream()
                 .map(record -> {
-                    Long islandReviewId = null;
-                    String islandReviewShortReview = null;
-                    String islandReviewDetailedReview = null;
+                    IslandReviewResponse islandReviewResponse = null;
 
                     // 섬 리뷰 정보가 있으면 설정
                     if (record.getIslandReview() != null) {
-                        IslandReviews islandReview = record.getIslandReview();
-                        islandReviewId = islandReview.getReviewId();
-                        islandReviewShortReview = islandReview.getShortReview();
-                        islandReviewDetailedReview = islandReview.getDetailedReview();
+                        islandReviewResponse = new IslandReviewResponse(record.getIslandReview());
                     }
 
                     return new TravelRecordResponse(record,
                             record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImage_url(),
-                            islandReviewId,
-                            islandReviewShortReview,
-                            islandReviewDetailedReview);
+                            islandReviewResponse);
                 })
                 .collect(Collectors.toList());
     }
@@ -318,23 +286,16 @@ public class TravelRecordsService {
         // TravelRecordResponse 객체 목록 생성
         return records.stream()
                 .map(record -> {
-                    Long islandReviewId = null;
-                    String islandReviewShortReview = null;
-                    String islandReviewDetailedReview = null;
+                    IslandReviewResponse islandReviewResponse = null;
 
                     // 섬 리뷰 정보가 있으면 설정
                     if (record.getIslandReview() != null) {
-                        IslandReviews islandReview = record.getIslandReview();
-                        islandReviewId = islandReview.getReviewId();
-                        islandReviewShortReview = islandReview.getShortReview();
-                        islandReviewDetailedReview = islandReview.getDetailedReview();
+                        islandReviewResponse = new IslandReviewResponse(record.getIslandReview());
                     }
 
                     return new TravelRecordResponse(record,
                             record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImage_url(),
-                            islandReviewId,
-                            islandReviewShortReview,
-                            islandReviewDetailedReview);
+                            islandReviewResponse);
                 })
                 .collect(Collectors.toList());
     }

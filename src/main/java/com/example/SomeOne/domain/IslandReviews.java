@@ -1,15 +1,11 @@
 package com.example.SomeOne.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
-@Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 public class IslandReviews {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
@@ -19,16 +15,20 @@ public class IslandReviews {
     private Island island;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private Users user;
 
-    private int rating; // 별점
-    private String shortReview; // 한줄평
-    private String detailedReview; // 상세 리뷰
+    @Column(nullable = false)
+    private int rating;
+    private String shortReview;
+    private String detailedReview;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "travel_record_id")
-    private TravelRecords travelRecord; // TravelRecords와 연결된 리뷰
+    @JsonIgnore
+    private TravelRecords travelRecord;
+
+    public IslandReviews() {} // 기본 생성자 추가
 
     public void setTravelRecord(TravelRecords travelRecord) {
         this.travelRecord = travelRecord;
@@ -40,6 +40,19 @@ public class IslandReviews {
         this.user = user;
         this.rating = rating;
         this.shortReview = shortReview;
+        this.detailedReview = detailedReview;
+    }
+
+    // Setter 메소드 추가
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public void setShortReview(String shortReview) {
+        this.shortReview = shortReview;
+    }
+
+    public void setDetailedReview(String detailedReview) {
         this.detailedReview = detailedReview;
     }
 }
