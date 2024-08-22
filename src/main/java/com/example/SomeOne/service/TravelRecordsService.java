@@ -105,13 +105,18 @@ public class TravelRecordsService {
 
     @Transactional
     public TravelRecordResponse update(Long recordId, CreateTravelRecordRequest request, List<MultipartFile> newImages) {
+
         // 여행 기록 조회
         TravelRecords record = travelRecordsRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel record not found with id: " + recordId));
 
         // 여행 기록 수정
-        record.setRecordTitle(request.getOneLineReview());
-        record.setRecordContent(request.getOverallReview());
+        if (request.getOneLineReview() != null) {
+            record.setRecordTitle(request.getOneLineReview());
+        }
+        if (request.getOverallReview() != null) {
+            record.setRecordContent(request.getOverallReview());
+        }
         record.setPublicPrivate(request.isPublicPrivate());
 
         // 기존 이미지 제거
@@ -154,6 +159,7 @@ public class TravelRecordsService {
         // TravelRecordResponse 객체 생성 및 반환
         return new TravelRecordResponse(updatedRecord, updatedRecord.getRecordImages().isEmpty() ? null : updatedRecord.getRecordImages().get(0).getImage_url(), islandReviewResponse);
     }
+
 
     @Transactional
     public void delete(Long recordId) {

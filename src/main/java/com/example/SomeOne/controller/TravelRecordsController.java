@@ -16,13 +16,7 @@ public class TravelRecordsController {
 
     private final TravelRecordsService travelRecordsService;
 
-    /**
-     * 여행 기록 생성 API
-     *
-     * @param images 여행 기록과 함께 업로드할 이미지 목록
-     * @param request 여행 기록 생성에 필요한 데이터
-     * @return 생성된 여행 기록의 응답 객체
-     */
+    //여행 기록 생성
     @PostMapping("/create")
     public TravelRecordResponse createTravelRecord(@RequestParam("images") List<MultipartFile> images,
                                                    @ModelAttribute CreateTravelRecordRequest request) {
@@ -44,17 +38,13 @@ public class TravelRecordsController {
         return travelRecordsService.update(recordId, request, newImages);
     }
 
-    /**
-     * 여행 기록 삭제 API
-     *
-     * @param recordId 삭제할 여행 기록의 ID
-     */
+    // 여행 기록 삭제
     @DeleteMapping("/delete/{recordId}")
     public void deleteTravelRecord(@PathVariable Long recordId) {
         travelRecordsService.delete(recordId);
     }
 
-    // 공유 가능한 링크를 생성하는 메서드
+    // 공유 가능한 링크를 생성
     @GetMapping("/share/{recordId}")
     public String shareRecord(@PathVariable Long recordId) {
         // 여행 기록의 ID로 공유 가능한 URL 생성
@@ -62,12 +52,7 @@ public class TravelRecordsController {
         return shareableUrl;
     }
 
-    /**
-     * 여행 기록 조회 API (ID로 조회)
-     *
-     * @param recordId 조회할 여행 기록의 ID
-     * @return 조회된 여행 기록의 응답 객체
-     */
+    // 여행 기록 조회
     @GetMapping("/view/{recordId}")
     public TravelRecordResponse getTravelRecordById(@PathVariable Long recordId) {
         return travelRecordsService.getRecordById(recordId);
