@@ -14,6 +14,8 @@ public class TravelPlaceResponse {
     private Long id;
     private String placeName;
     private String address;
+    private String x_address;
+    private String y_address;
     private Business_category category;
     private LocalDate date;
     private Integer order;

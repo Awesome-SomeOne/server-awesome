@@ -60,9 +60,9 @@ public class TravelPlansService {
         List<TravelPlace> travelPlaceList = travelPlaceService.findByTravelPlan(planId);
 
         List<TravelPlaceResponse> responseList = travelPlaceList.stream().map((p -> new TravelPlaceResponse(
-                p.getPlace_id(), p.getBusinesses().getBusiness_name(),
-                p.getBusinesses().getAddress(), p.getBusinesses().getBusinessType(), p.getDate(), p.getPlaceOrder(),
-                p.getBusinesses().getImg_url()))).collect(Collectors.toList());
+                p.getPlace_id(), p.getBusinesses().getBusiness_name(), p.getBusinesses().getAddress(),
+                p.getBusinesses().getX_address(), p.getBusinesses().getY_address(), p.getBusinesses().getBusinessType(),
+                p.getDate(), p.getPlaceOrder(), p.getBusinesses().getImg_url()))).collect(Collectors.toList());
 
         return new GetTravelPlanResponse(planName, islandName, responseList);
     }
