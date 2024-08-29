@@ -22,7 +22,7 @@ public class CreateTravelRecordRequest {
     // 섬 리뷰 관련 필드 추가
     private Long islandId; // 섬 ID
     @Max(5) // 별점은 1부터 5까지
-    private int rating; // 별점
+    private Integer rating; // 별점
     private String shortReview; // 한줄평
     private String detailedReview; // 상세 리뷰
 }

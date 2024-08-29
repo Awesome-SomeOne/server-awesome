@@ -11,12 +11,6 @@ import java.util.List;
 
 public interface TravelRecordsRepository extends JpaRepository<TravelRecords, Long> {
 
-    List<TravelRecords> findByUserAndPlanOrderByRecordIdDesc(Users user, TravelPlans plan);  // 필드명 변경
-
-    List<TravelRecords> findByUserOrderByRecordIdDesc(Users user);
-
-    List<TravelRecords> findByPlanOrderByRecordIdDesc(TravelPlans plan);
-
     @Query("SELECT tr FROM TravelRecords tr JOIN FETCH tr.recordImages WHERE tr.user = :user ORDER BY tr.recordId DESC")
     List<TravelRecords> findByUserWithImagesOrderByRecordIdDesc(@Param("user") Users user);
 

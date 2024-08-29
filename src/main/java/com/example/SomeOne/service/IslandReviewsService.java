@@ -26,7 +26,7 @@ public class IslandReviewsService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        return islandReviewsRepository.findByIslandAndUser(island, user)
+        return islandReviewsRepository.findFirstByIslandAndUser(island, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Island review not found for islandId: " + islandId + " and userId: " + userId));
     }
 
@@ -38,7 +38,7 @@ public class IslandReviewsService {
         Users user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
 
-        return islandReviewsRepository.findByIslandAndUser(island, user)
+        return islandReviewsRepository.findFirstByIslandAndUser(island, user)
                 .map(existingReview -> {
                     existingReview.setRating(request.getRating());
                     existingReview.setShortReview(request.getShortReview());

@@ -19,6 +19,7 @@ public class RecordImages {
     @JoinColumn(name = "record_id")
     private TravelRecords record;
 
+    @Column(length = 1000)  // URL 길이를 1000자로 늘림
     private String image_url;
 
     @Builder

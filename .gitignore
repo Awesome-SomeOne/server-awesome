@@ -1,4 +1,5 @@
 application.yml
+application-aws.yml
 
 ######################
 HELP.md

@@ -1,5 +1,6 @@
 package com.example.SomeOne.service;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.example.SomeOne.domain.*;
 import com.example.SomeOne.dto.TravelRecords.Request.CreateTravelRecordRequest;
 import com.example.SomeOne.dto.TravelRecords.Response.TravelRecordResponse;
@@ -7,6 +8,7 @@ import com.example.SomeOne.dto.TravelRecords.Response.IslandReviewResponse;
 import com.example.SomeOne.exception.ImageStorageException;
 import com.example.SomeOne.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,24 +23,24 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TravelRecordsService {
-
     private final TravelRecordsRepository travelRecordsRepository;
     private final IslandReviewsRepository islandReviewsRepository;
     private final IslandRepository islandRepository;
     private final TravelPlansRepository travelPlansRepository;
     private final UserRepository userRepository;
+    private final S3ImageUploadService s3ImageUploadService;
+    private final AmazonS3 amazonS3Client;
 
-    private final String imageUploadDir = "D:/SomeOne/static/images";
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     @Transactional
     public TravelRecordResponse create(List<MultipartFile> images, CreateTravelRecordRequest request) {
         // 여행 계획 조회
         TravelPlans plan = travelPlansRepository.findById(request.getPlanId())
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + request.getPlanId()));
-
         // 사용자 조회
         Users user = plan.getUser();
-
         // 여행 기록 생성
         TravelRecords record = TravelRecords.builder()
                 .user(user)
@@ -47,31 +49,24 @@ public class TravelRecordsService {
                 .recordContent(request.getOverallReview())
                 .publicPrivate(request.isPublicPrivate())
                 .build();
-
         // 이미지 저장 및 URL 생성
         List<String> imageUrls = new ArrayList<>();
         for (MultipartFile image : images) {
-            String imageUrl = saveImage(image);
+            String imageUrl = s3ImageUploadService.saveImage(image);
             imageUrls.add(imageUrl);
-
             RecordImages recordImage = RecordImages.builder()
                     .image_url(imageUrl)
                     .build();
-
             record.addRecordImage(recordImage);
         }
-
         // 여행 기록 저장
         TravelRecords savedRecord = travelRecordsRepository.save(record);
-
         // 섬 리뷰 정보 초기화
         IslandReviewResponse islandReviewResponse = null;
-
         // 섬 ID가 제공되었을 경우 섬 리뷰 생성
         if (request.getIslandId() != null) {
             Island island = islandRepository.findById(request.getIslandId())
                     .orElseThrow(() -> new IllegalArgumentException("Island not found with id: " + request.getIslandId()));
-
             IslandReviews islandReview = IslandReviews.builder()
                     .island(island)
                     .user(user)
@@ -79,29 +74,14 @@ public class TravelRecordsService {
                     .shortReview(request.getShortReview())
                     .detailedReview(request.getDetailedReview())
                     .build();
-
             islandReview.setTravelRecord(savedRecord);
             IslandReviews savedIslandReview = islandReviewsRepository.save(islandReview);
             islandReviewResponse = new IslandReviewResponse(savedIslandReview);
         }
-
         // TravelRecordResponse 객체 생성 및 반환
         return new TravelRecordResponse(savedRecord, imageUrls.isEmpty() ? null : imageUrls.get(0), islandReviewResponse);
     }
 
-    private String saveImage(MultipartFile image) {
-        try {
-            // 파일 경로 설정
-            String filePath = imageUploadDir + "/" + image.getOriginalFilename();
-            File dest = new File(filePath);
-            // 파일 저장
-            image.transferTo(dest);
-            // URL 반환
-            return "http://localhost:8080/images/" + image.getOriginalFilename();
-        } catch (IOException e) {
-            throw new ImageStorageException("Failed to store file", e);
-        }
-    }
 
     @Transactional
     public TravelRecordResponse update(Long recordId, CreateTravelRecordRequest request, List<MultipartFile> newImages) {
@@ -110,7 +90,34 @@ public class TravelRecordsService {
         TravelRecords record = travelRecordsRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel record not found with id: " + recordId));
 
-        // 여행 기록 수정
+        Island island = islandRepository.findById(request.getIslandId())
+                .orElseThrow(() -> new IllegalArgumentException("Island not found with id: " + request.getIslandId()));
+
+        // 섬 ID와 사용자 ID로 기존 리뷰 조회
+        Optional<IslandReviews> existingReview = islandReviewsRepository.findFirstByIslandAndUser(island, record.getUser());
+
+        IslandReviews islandReview;
+        if (existingReview.isPresent()) {
+            // 기존 리뷰가 존재하는 경우, 리뷰를 업데이트
+            islandReview = existingReview.get();
+            islandReview.setRating(request.getRating());
+            islandReview.setShortReview(request.getShortReview());
+            islandReview.setDetailedReview(request.getDetailedReview());
+        } else {
+            // 새로운 리뷰 생성
+            islandReview = IslandReviews.builder()
+                    .island(island)
+                    .user(record.getUser())
+                    .rating(request.getRating())
+                    .shortReview(request.getShortReview())
+                    .detailedReview(request.getDetailedReview())
+                    .build();
+
+            islandReview.setTravelRecord(record);
+            islandReviewsRepository.save(islandReview);
+        }
+
+        // 여행 기록 수정 및 저장
         if (request.getOneLineReview() != null) {
             record.setRecordTitle(request.getOneLineReview());
         }
@@ -121,10 +128,9 @@ public class TravelRecordsService {
 
         // 기존 이미지 제거
         record.getRecordImages().clear();
-        // 새 이미지 저장
         if (newImages != null && !newImages.isEmpty()) {
             for (MultipartFile image : newImages) {
-                String imageUrl = saveImage(image);
+                String imageUrl = s3ImageUploadService.saveImage(image);
                 RecordImages recordImage = RecordImages.builder()
                         .image_url(imageUrl)
                         .build();
@@ -132,34 +138,11 @@ public class TravelRecordsService {
             }
         }
 
-        // 여행 기록 저장
-        TravelRecords updatedRecord = travelRecordsRepository.save(record);
-
-        // 섬 리뷰 정보 초기화
-        IslandReviewResponse islandReviewResponse = null;
-
-        // 섬 ID가 제공되었을 경우 섬 리뷰 생성
-        if (request.getIslandId() != null) {
-            Island island = islandRepository.findById(request.getIslandId())
-                    .orElseThrow(() -> new IllegalArgumentException("Island not found with id: " + request.getIslandId()));
-
-            IslandReviews islandReview = IslandReviews.builder()
-                    .island(island)
-                    .user(record.getUser())
-                    .rating(request.getRating())
-                    .shortReview(request.getShortReview())
-                    .detailedReview(request.getDetailedReview())
-                    .build();
-
-            islandReview.setTravelRecord(updatedRecord);
-            IslandReviews savedIslandReview = islandReviewsRepository.save(islandReview);
-            islandReviewResponse = new IslandReviewResponse(savedIslandReview);
-        }
+        travelRecordsRepository.save(record);
 
         // TravelRecordResponse 객체 생성 및 반환
-        return new TravelRecordResponse(updatedRecord, updatedRecord.getRecordImages().isEmpty() ? null : updatedRecord.getRecordImages().get(0).getImage_url(), islandReviewResponse);
+        return new TravelRecordResponse(record, record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImage_url(), new IslandReviewResponse(islandReview));
     }
-
 
     @Transactional
     public void delete(Long recordId) {
@@ -169,18 +152,26 @@ public class TravelRecordsService {
 
         // 여행 기록의 모든 이미지 삭제
         for (RecordImages image : record.getRecordImages()) {
-            deleteImageFromStorage(image.getImage_url());
+            deleteImageFromS3(image.getImage_url());
         }
 
         // 여행 기록 삭제
         travelRecordsRepository.delete(record);
     }
 
-    private void deleteImageFromStorage(String imageUrl) {
-        File file = new File(imageUploadDir + "/" + imageUrl.substring(imageUrl.lastIndexOf('/') + 1));
-        if (file.exists()) {
-            file.delete();
+    private void deleteImageFromS3(String imageUrl) {
+        try {
+            String key = extractKeyFromUrl(imageUrl);
+            amazonS3Client.deleteObject(bucket, key);
+        } catch (Exception e) {
+            throw new ImageStorageException("Failed to delete image from S3", e);
         }
+    }
+
+    private String extractKeyFromUrl(String imageUrl) {
+        // S3 URL에서 키(파일 이름)를 추출하는 로직
+        // 예: https://your-bucket.s3.region.amazonaws.com/folder/image.jpg에서 folder/image.jpg를 추출
+        return imageUrl.substring(imageUrl.indexOf(bucket) + bucket.length() + 1);
     }
 
     // 여행 기록 공유

@@ -2,8 +2,14 @@ package com.example.SomeOne.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import lombok.*;
 @Getter
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"island_id", "users_id"})
+        }
+)
 @Entity
 public class IslandReviews {
     @Id
@@ -19,7 +25,9 @@ public class IslandReviews {
     private Users user;
 
     @Column(nullable = false)
-    private int rating;
+    @Max(5)
+    private Integer rating;
+
     private String shortReview;
     private String detailedReview;
 
@@ -35,7 +43,7 @@ public class IslandReviews {
     }
 
     @Builder
-    public IslandReviews(Island island, Users user, int rating, String shortReview, String detailedReview) {
+    public IslandReviews(Island island, Users user, Integer rating, String shortReview, String detailedReview) {
         this.island = island;
         this.user = user;
         this.rating = rating;
@@ -43,8 +51,7 @@ public class IslandReviews {
         this.detailedReview = detailedReview;
     }
 
-    // Setter 메소드 추가
-    public void setRating(int rating) {
+    public void setRating(Integer rating) {
         this.rating = rating;
     }
 
