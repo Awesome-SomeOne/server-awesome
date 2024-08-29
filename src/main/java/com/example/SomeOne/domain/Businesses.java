@@ -14,11 +14,11 @@ public class Businesses {
     private Long business_id;
 
     private String business_name;
-    private Business_category business_type;
+    private Business_category businessType; // 식당, 숙박, 관광지, 액티비티
     private String address;
-    private String operating_hours;
-    private String closed_days;
-    private String phone_number;
+    private String x_address;
+    private String y_address;
+    private String img_url;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "island_id")

@@ -1,6 +1,5 @@
 package com.example.SomeOne.domain;
 
-import com.example.SomeOne.domain.enums.Business_category;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -13,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class Island {
 
     @Id @GeneratedValue
-    private Long island_id;
+    private Long id;
 
-    private String island_name;
+    private String name;
     private String address;
 }
