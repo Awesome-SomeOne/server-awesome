@@ -8,18 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Repository
-
 public class WeatherDAO {
     @Value("${api.key}")
     private String apikey;
@@ -33,7 +26,16 @@ public class WeatherDAO {
         // 현재 날짜와 시간을 가져와서 base_date와 base_time에 설정
         LocalDateTime now = LocalDateTime.now();
         String baseDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String baseTime = now.minusMinutes(45).format(DateTimeFormatter.ofPattern("HH00")); // 45분 전 시간 설정
+
+        String baseTime;
+        int minute = now.getMinute();
+        if (minute >= 10) {
+            // 예: 10분 이후에 요청 시, 현재 시간을 사용
+            baseTime = now.format(DateTimeFormatter.ofPattern("HH00"));
+        } else {
+            // 예: 10분 이전에 요청 시, 이전 시간을 사용
+            baseTime = now.minusHours(1).format(DateTimeFormatter.ofPattern("HH00"));
+        }
 
         String url = API_URL + "?serviceKey=" + SERVICE_KEY
                 + "&numOfRows=10&pageNo=1&dataType=JSON"
@@ -54,70 +56,40 @@ public class WeatherDAO {
     private WeatherNowDTO parseWeatherResponse(String responseBody) {
         WeatherNowDTO dto = new WeatherNowDTO();
         try {
-            if (responseBody.startsWith("<")) {
-                // XML 형식으로 파싱
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder builder = factory.newDocumentBuilder();
-                Document doc = builder.parse(new ByteArrayInputStream(responseBody.getBytes()));
-                NodeList items = doc.getElementsByTagName("item");
+            // JSON 형식으로 파싱
+            JSONObject json = new JSONObject(responseBody);
+            JSONObject response = json.getJSONObject("response");
+            JSONObject header = response.getJSONObject("header");
+            JSONObject body = response.getJSONObject("body");
+            JSONArray items = body.getJSONObject("items").getJSONArray("item");
 
-                for (int i = 0; i < items.getLength(); i++) {
-                    Element item = (Element) items.item(i);
-                    String category = item.getElementsByTagName("category").item(0).getTextContent();
-                    String obsrValue = item.getElementsByTagName("obsrValue").item(0).getTextContent();
+            // Header 정보 추출
+            dto.setResultCode(header.getString("resultCode"));
+            dto.setResultMsg(header.getString("resultMsg"));
 
-                    switch (category) {
-                        case "T1H": // 온도
-                            dto.setTemperature(Double.parseDouble(obsrValue));
-                            break;
-                        case "RN1": // 강수량
-                            dto.setRainfall(Double.parseDouble(obsrValue));
-                            break;
-                        case "REH": // 습도
-                            dto.setHumidity(Double.parseDouble(obsrValue));
-                            break;
-                        case "SKY": // 날씨 상태
-                            dto.setWeatherCondition(parseWeatherCondition(obsrValue));
-                            break;
-                        // 필요한 경우 다른 필드 추가
-                    }
-                }
-            } else {
-                // JSON 형식으로 파싱
-                JSONObject json = new JSONObject(responseBody);
-                JSONObject response = json.getJSONObject("response");
-                JSONObject header = response.getJSONObject("header");
-                JSONObject body = response.getJSONObject("body");
-                JSONArray items = body.getJSONObject("items").getJSONArray("item");
+            // Body 정보 추출
+            dto.setBaseDate(body.getString("baseDate"));
+            dto.setBaseTime(body.getString("baseTime"));
 
-                // Header 정보 추출
-                dto.setResultCode(header.getString("resultCode"));
-                dto.setResultMsg(header.getString("resultMsg"));
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                String category = item.getString("category");
+                String obsrValue = item.getString("obsrValue");
 
-                // Body 정보 추출
-                dto.setBaseDate(body.getString("baseDate"));
-                dto.setBaseTime(body.getString("baseTime"));
-
-                for (int i = 0; i < items.length(); i++) {
-                    JSONObject item = items.getJSONObject(i);
-                    String category = item.getString("category");
-                    String obsrValue = item.getString("obsrValue");
-
-                    switch (category) {
-                        case "T1H": // 온도
-                            dto.setTemperature(Double.parseDouble(obsrValue));
-                            break;
-                        case "RN1": // 강수량
-                            dto.setRainfall(Double.parseDouble(obsrValue));
-                            break;
-                        case "REH": // 습도
-                            dto.setHumidity(Double.parseDouble(obsrValue));
-                            break;
-                        case "SKY": // 날씨 상태
-                            dto.setWeatherCondition(parseWeatherCondition(obsrValue));
-                            break;
-                        // 필요한 경우 다른 필드 추가
-                    }
+                switch (category) {
+                    case "T1H": // 온도
+                        dto.setTemperature(Double.parseDouble(obsrValue));
+                        break;
+                    case "RN1": // 강수량
+                        dto.setRainfall(Double.parseDouble(obsrValue));
+                        break;
+                    case "REH": // 습도
+                        dto.setHumidity(Double.parseDouble(obsrValue));
+                        break;
+                    case "SKY": // 날씨 상태
+                        dto.setWeatherCondition(parseWeatherCondition(obsrValue));
+                        break;
+                    // 필요한 경우 다른 필드 추가
                 }
             }
         } catch (Exception e) {
