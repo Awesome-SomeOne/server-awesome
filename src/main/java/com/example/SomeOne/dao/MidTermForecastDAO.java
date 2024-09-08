@@ -1,7 +1,6 @@
 package com.example.SomeOne.dao;
 
-import com.example.SomeOne.dto.MidTermForecastDTO;
-import org.json.JSONArray;
+import com.example.SomeOne.dto.weather.MidTermForecastDTO;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;

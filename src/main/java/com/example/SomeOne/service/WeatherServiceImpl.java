@@ -1,7 +1,7 @@
 package com.example.SomeOne.service;
 
 import com.example.SomeOne.dao.WeatherDAO;
-import com.example.SomeOne.dto.WeatherNowDTO;
+import com.example.SomeOne.dto.weather.WeatherNowDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

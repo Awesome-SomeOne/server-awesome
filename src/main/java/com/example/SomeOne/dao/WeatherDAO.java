@@ -1,6 +1,9 @@
 package com.example.SomeOne.dao;
 
-import com.example.SomeOne.dto.WeatherNowDTO;
+import com.example.SomeOne.dto.weather.WeatherNowDTO;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 
 @Repository
 public class WeatherDAO {
+
     @Value("${api.key}")
     private String apikey;
 
@@ -33,7 +37,6 @@ public class WeatherDAO {
             // 예: 10분 이후에 요청 시, 현재 시간을 사용
             baseTime = now.format(DateTimeFormatter.ofPattern("HH00"));
         } else {
-            // 예: 10분 이전에 요청 시, 이전 시간을 사용
             baseTime = now.minusHours(1).format(DateTimeFormatter.ofPattern("HH00"));
         }
 

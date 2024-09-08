@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public class TravelPlace {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long place_id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,6 +27,7 @@ public class TravelPlace {
     private LocalDate date;
 
     private Integer placeOrder;
+
     @Builder
     public TravelPlace(TravelPlans travelPlans, Businesses businesses, LocalDate date, Integer placeOrder) {
         this.travelPlans = travelPlans;
@@ -45,5 +46,10 @@ public class TravelPlace {
 
     public void changeOrder(Integer changeOrder) {
         this.placeOrder = changeOrder;
+    }
+
+    public void update(Integer order, LocalDate date) {
+        this.placeOrder = order;
+        this.date = date;
     }
 }

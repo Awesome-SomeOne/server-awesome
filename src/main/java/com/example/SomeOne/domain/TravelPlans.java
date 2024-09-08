@@ -26,7 +26,7 @@ public class TravelPlans {
     private Users user;
     private String plan_name;
     private LocalDate startDate;
-    private LocalDate end_date;
+    private LocalDate endDate;
     private TravelStatus status;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -34,12 +34,20 @@ public class TravelPlans {
     private Island island;
 
     @Builder
-    public TravelPlans(Users user, String plan_name, LocalDate startDate, LocalDate end_date, Island island) {
+    public TravelPlans(Users user, String plan_name, LocalDate startDate, LocalDate endDate, Island island) {
         this.user = user;
         this.plan_name = plan_name;
         this.startDate = startDate;
-        this.end_date = end_date;
+        this.endDate = endDate;
         this.island = island;
         this.status = TravelStatus.여행전;
+    }
+
+    public void startTravel() {
+        this.status = TravelStatus.여행중;
+    }
+
+    public void finishTravel() {
+        this.status = TravelStatus.여행완료;
     }
 }

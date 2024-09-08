@@ -1,7 +1,7 @@
 package com.example.SomeOne.service;
 
 import com.example.SomeOne.dao.ShortTermForecastDAO;
-import com.example.SomeOne.dto.ShortTermForecastDTO;
+import com.example.SomeOne.dto.weather.ShortTermForecastDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

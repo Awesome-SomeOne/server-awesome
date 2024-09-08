@@ -1,8 +1,8 @@
 package com.example.SomeOne.controller;
 
-import com.example.SomeOne.dto.MidTermForecastDTO;
-import com.example.SomeOne.dto.ShortTermForecastDTO;
-import com.example.SomeOne.dto.WeatherNowDTO;
+import com.example.SomeOne.dto.weather.MidTermForecastDTO;
+import com.example.SomeOne.dto.weather.ShortTermForecastDTO;
+import com.example.SomeOne.dto.weather.WeatherNowDTO;
 import com.example.SomeOne.service.MidTermForecastService;
 import com.example.SomeOne.service.ShortTermForecastService;
 import com.example.SomeOne.service.WeatherService;

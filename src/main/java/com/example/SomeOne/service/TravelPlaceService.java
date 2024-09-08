@@ -3,6 +3,7 @@ package com.example.SomeOne.service;
 import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.TravelPlace;
 import com.example.SomeOne.domain.TravelPlans;
+import com.example.SomeOne.dto.TravelPlans.request.UpdatePlaceRequest;
 import com.example.SomeOne.repository.TravelPlaceRepository;
 import com.example.SomeOne.repository.TravelPlansRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +63,15 @@ public class TravelPlaceService {
         }
 
         travelPlaceRepository.delete(travelPlace);
+    }
+
+    @Transactional
+    public void updatePlace(List<UpdatePlaceRequest> request) {
+        for (int i = 0; i < request.size(); i++) {
+            Long travelPlaceId = request.get(i).getTravelPlaceId();
+            TravelPlace travelPlace = findById(travelPlaceId);
+            travelPlace.update(request.get(i).getOrder(), request.get(i).getDate());
+        }
     }
 
     @Transactional
