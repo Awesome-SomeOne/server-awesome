@@ -15,10 +15,9 @@ public class SecurityConfig {
         http
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/travel-records/**").permitAll() // 인증 없이 접근 허용
-                                .requestMatchers("/**").permitAll() // 모든 요청 허용
+                                .anyRequest().permitAll() // 모든 요청에 대해 인증 없이 접근 허용
                 )
-                .csrf(csrf -> csrf.disable()); // CSRF 보호 비활성화 (필요에 따라 조정)
+                .httpBasic(); // 기본 HTTP 인증 비활성화
         return http.build();
     }
 }
