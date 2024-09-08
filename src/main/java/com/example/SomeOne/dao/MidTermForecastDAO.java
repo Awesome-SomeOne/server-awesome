@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 @Repository
 public class MidTermForecastDAO {
 
-    @Value("${spring.weather.api.key}")
+    @Value("${api.midTermApiKey}")
     private String apiKey;
 
     private final String API_URL = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidLandFcst";
@@ -100,7 +100,7 @@ public class MidTermForecastDAO {
         return dto;
     }
 
-    private void parseJsonResponse(JSONObject json, MidTermForecastDTO dto) {
+    private void parseJsonResponse(JSONObject json, MidTermForecastDTO dto) throws JSONException {
         JSONObject response = json.getJSONObject("response");
         JSONObject body = response.getJSONObject("body");
         JSONObject items = body.getJSONObject("items");

@@ -4,17 +4,21 @@ import com.example.SomeOne.dto.weather.WeatherNowDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Repository
 public class WeatherDAO {
-    @Value("${spring.weather.api.key}")
+
+    @Value("${api.key}")
     private String apikey;
 
     private final String API_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst";
@@ -30,10 +34,9 @@ public class WeatherDAO {
         String baseTime;
         int minute = now.getMinute();
         if (minute >= 10) {
-            // 10분 이후에 요청 시, 현재 시간을 사용
+            // 예: 10분 이후에 요청 시, 현재 시간을 사용
             baseTime = now.format(DateTimeFormatter.ofPattern("HH00"));
         } else {
-            // 10분 이전에 요청 시, 이전 시간을 사용
             baseTime = now.minusHours(1).format(DateTimeFormatter.ofPattern("HH00"));
         }
 

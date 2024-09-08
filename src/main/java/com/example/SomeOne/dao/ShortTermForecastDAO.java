@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 @Repository
 public class ShortTermForecastDAO {
 
-    @Value("${spring.weather.api.key}")
+    @Value("${api.key}")
     private String apiKey;
 
     private final String API_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst";

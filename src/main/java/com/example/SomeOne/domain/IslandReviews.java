@@ -38,6 +38,10 @@ public class IslandReviews {
 
     public IslandReviews() {} // 기본 생성자 추가
 
+    public Long getReviewId() {
+        return reviewId;
+    }
+
     public void setTravelRecord(TravelRecords travelRecord) {
         this.travelRecord = travelRecord;
     }
