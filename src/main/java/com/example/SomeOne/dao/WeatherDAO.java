@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 
 @Repository
 public class WeatherDAO {
-    @Value("${api.key}")
+    @Value("${spring.weather.api.key}")
     private String apikey;
 
     private final String API_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst";

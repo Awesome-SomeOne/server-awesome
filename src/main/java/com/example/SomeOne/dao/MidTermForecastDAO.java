@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 @Repository
 public class MidTermForecastDAO {
 
-    @Value("${api.midTermApiKey}")
+    @Value("${spring.weather.api.key}")
     private String apiKey;
 
     private final String API_URL = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidLandFcst";

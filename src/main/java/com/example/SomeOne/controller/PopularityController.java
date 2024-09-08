@@ -1,9 +1,10 @@
 package com.example.SomeOne.controller;
 
 import com.example.SomeOne.dto.Businesses.request.FamousPlaceRequest;
+import com.example.SomeOne.dto.Businesses.request.GetLandmarkRequest;
 import com.example.SomeOne.dto.Businesses.request.RecommendPlaceListRequest;
+import com.example.SomeOne.dto.Businesses.response.GetLandmarkResponse;
 import com.example.SomeOne.dto.Businesses.response.PopularityPlaceResponse;
-import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
 import com.example.SomeOne.service.PopularityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,11 @@ public class PopularityController {
     @GetMapping("/recommend/place") // 추천장소 리스트
     public List<PopularityPlaceResponse> recommendPlaceList(@RequestBody RecommendPlaceListRequest request) {
         return popularityService.recommendPlaceList(request.getIslandId(), request.getCategory());
+    }
+
+    @GetMapping("/landmark")
+    public GetLandmarkResponse getLandmark(@RequestBody GetLandmarkRequest request) {
+        return popularityService.getPlace(request.getBusinessId());
     }
 
 }
