@@ -1,6 +1,7 @@
 package com.example.SomeOne.dao;
 
 import com.example.SomeOne.dto.MidTermForecastDTO;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
@@ -100,7 +101,7 @@ public class MidTermForecastDAO {
         return dto;
     }
 
-    private void parseJsonResponse(JSONObject json, MidTermForecastDTO dto) {
+    private void parseJsonResponse(JSONObject json, MidTermForecastDTO dto) throws JSONException {
         JSONObject response = json.getJSONObject("response");
         JSONObject body = response.getJSONObject("body");
         JSONObject items = body.getJSONObject("items");
