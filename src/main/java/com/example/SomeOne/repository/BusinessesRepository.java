@@ -16,4 +16,12 @@ public interface BusinessesRepository extends JpaRepository<Businesses, Long> {
     List<Businesses> findByIslandIdAndBusinessType(Long islandId, Business_category category);
 
     List<Businesses> findByIslandId(Long islandId);
+
+    @Query("SELECT b FROM Businesses b LEFT JOIN BusinessReviews r ON b.business_id = r.business.business_id " +
+            "WHERE b.island.island_id = :islandId AND b.businessType = :category GROUP BY b.business_id ORDER BY AVG(r.rating) DESC")
+    List<Businesses> findByIslandIdAndBusinessTypeOrderByRatingDesc(@Param("islandId") Long islandId,
+                                                                    @Param("category") Business_category category);
+
+    @Query("SELECT AVG(r.rating) FROM BusinessReviews r WHERE r.business.business_id = :businessId")
+    Double findAverageRatingByBusinessId(@Param("businessId") Long businessId);
 }
