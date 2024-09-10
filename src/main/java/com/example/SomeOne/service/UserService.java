@@ -12,8 +12,12 @@ import com.example.SomeOne.domain.enums.UserType;
 import com.example.SomeOne.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -94,8 +98,31 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
     }
+
+    public void logoutFromKakao(String accessToken) {
+        String logoutUrl = "https://someone.com/logout";
+    }
+
+    public void unlinkKakaoUser(String accessToken) {
+        String unlinkUrl = "https://kapi.kakao.com/v1/user/unlink";
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(unlinkUrl, entity, String.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                // 사용자 탈퇴 성공 처리
+                System.out.println("사용자 탈퇴 성공");
+            }
+        } catch (Exception e) {
+            // 오류 처리
+            e.printStackTrace(); // 최소한의 오류 처리
+        }
+    }
+
+
 }
-
-
-
-
