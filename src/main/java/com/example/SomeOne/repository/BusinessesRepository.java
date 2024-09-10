@@ -25,4 +25,5 @@ public interface BusinessesRepository extends JpaRepository<Businesses, Long> {
 
     @Query("SELECT AVG(r.rating) FROM BusinessReviews r WHERE r.business.business_id = :businessId")
     Double findAverageRatingByBusinessId(@Param("businessId") Long businessId);
+
 }

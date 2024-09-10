@@ -4,6 +4,7 @@ package com.example.SomeOne.controller;
 import com.example.SomeOne.dto.Businesses.response.BusinessResponse;
 import com.example.SomeOne.service.MapService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +40,21 @@ public class MapController {
         return ResponseEntity.ok(places);
     }
 
-    // 카카오 API를 사용한 장소 검색 엔드포인트
+    // 섬 데이터 비즈니스 장소 검색
+    @GetMapping("/businesses/search")
+    public ResponseEntity<?> searchBusinesses(@RequestParam String keyword) {
+        List<BusinessResponse> places = mapService.searchBusinesses(keyword);
+
+        if (places.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("검색 결과가 없습니다.");
+        }
+
+        return ResponseEntity.ok(places);
+    }
+
+    // 카카오 API를 사용한 장소 검색
     @GetMapping("/search")
     public ResponseEntity<List<BusinessResponse>> searchPlaces(@RequestParam String query) {
         List<BusinessResponse> results = mapService.findPlacesByKeyword(query);

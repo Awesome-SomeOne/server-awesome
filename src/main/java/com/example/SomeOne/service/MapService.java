@@ -4,6 +4,7 @@ import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.TravelPlace;
 import com.example.SomeOne.domain.Users;
 import com.example.SomeOne.dto.Businesses.response.BusinessResponse;
+import com.example.SomeOne.repository.BusinessesRepository;
 import com.example.SomeOne.repository.TravelPlaceRepository;
 import com.example.SomeOne.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,12 +29,21 @@ public class MapService {
 
     private final TravelPlaceRepository travelPlaceRepository;
     private final UserRepository userRepository;
+    private final BusinessesRepository businessesRepository;
 
     // 비즈니스 정보 마커 표시
     public List<BusinessResponse> getBusinessLocations() {
         List<TravelPlace> places = travelPlaceRepository.findAll();
         return places.stream()
                 .map(place -> new BusinessResponse(place.getBusinesses()))
+                .collect(Collectors.toList());
+    }
+
+    // 비즈니스 이름으로 장소 검색
+    public List<BusinessResponse> searchBusinesses(String keyword) {
+        List<Businesses> businesses = businessesRepository.findByKeyword(keyword);
+        return businesses.stream()
+                .map(BusinessResponse::new)
                 .collect(Collectors.toList());
     }
 
