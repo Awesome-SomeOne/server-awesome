@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
 import java.net.URI;
 
 @RestController
@@ -35,10 +36,23 @@ public class UserController {
 
 
     @GetMapping("/kakao/callback")
-    public ResponseEntity<LoginResponse> kakaoCallback(@RequestParam(value="code") String code) {
+    public ResponseEntity<LoginResponse> kakaoCallback(@RequestParam(value = "code") String code) {
         // 받은 인가 코드로 로그인 처리 로직
         SocialLoginRequest request = new SocialLoginRequest(UserType.KAKAO, code);
         return ResponseEntity.ok(userService.doSocialLogin(request));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String accessToken) {
+        userService.logoutFromKakao(accessToken);
+        return ResponseEntity.ok("Logged out successfully.");
+    }
+
+    @PostMapping("/kakao/unlink")
+    public ResponseEntity<String> unlinkKakaoUser(@RequestHeader("Authorization") String accessToken) {
+        userService.unlinkKakaoUser(accessToken);
+        return ResponseEntity.ok("탈퇴 완료");
+    }
+
 
 }
