@@ -10,6 +10,5 @@ public class CreateBusinessReviewRequest {
     private Long businessId;
     private Long userId;
     private Integer rating;
-    private String shortReview;
-    private String detailedReview;
+    private String businessReview;
 }

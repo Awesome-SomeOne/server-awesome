@@ -27,15 +27,15 @@ public class BusinessReviews {
     @Column(nullable = false)
     private Integer rating;
 
-    private String shortReview;
-    private String detailedReview;
+    private String businessReview;
+
 
     @Builder
-    public BusinessReviews(Businesses business, Users user, Integer rating, String shortReview, String detailedReview) {
+    public BusinessReviews(Businesses business, Users user, Integer rating, String businessReview) {
         this.business = business;
         this.user = user;
         this.rating = rating;
-        this.shortReview = shortReview;
-        this.detailedReview = detailedReview;
+        this.businessReview = businessReview;
+
     }
 }

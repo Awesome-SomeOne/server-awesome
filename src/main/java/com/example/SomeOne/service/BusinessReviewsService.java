@@ -50,8 +50,7 @@ public class BusinessReviewsService {
                 .businessId(review.getBusiness().getBusiness_id())
                 .userId(review.getUser().getUsers_id())
                 .rating(review.getRating())
-                .shortReview(review.getShortReview())
-                .detailedReview(review.getDetailedReview())
+                .businessReview(review.getBusinessReview())
                 .imageUrls(imageUrls)
                 .build();
     }
@@ -67,8 +66,7 @@ public class BusinessReviewsService {
         BusinessReviews review = businessReviewsRepository.findByBusinessAndUser(business, user)
                 .map(existingReview -> {
                     existingReview.setRating(request.getRating());
-                    existingReview.setShortReview(request.getShortReview());
-                    existingReview.setDetailedReview(request.getDetailedReview());
+                    existingReview.setBusinessReview(request.getBusinessReview());
                     return businessReviewsRepository.save(existingReview);
                 })
                 .orElseGet(() -> {
@@ -76,8 +74,7 @@ public class BusinessReviewsService {
                             .business(business)
                             .user(user)
                             .rating(request.getRating())
-                            .shortReview(request.getShortReview())
-                            .detailedReview(request.getDetailedReview())
+                            .businessReview(request.getBusinessReview())
                             .build();
                     return businessReviewsRepository.save(newReview);
                 });
@@ -95,8 +92,7 @@ public class BusinessReviewsService {
                 .businessId(review.getBusiness().getBusiness_id())
                 .userId(review.getUser().getUsers_id())
                 .rating(review.getRating())
-                .shortReview(review.getShortReview())
-                .detailedReview(review.getDetailedReview())
+                .businessReview(review.getBusinessReview())
                 .imageUrls(imageUrls)
                 .build();
     }
@@ -112,7 +108,7 @@ public class BusinessReviewsService {
         BusinessReviews review = businessReviewsRepository.findByBusinessAndUser(business, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Business review not found for businessId: " + businessId + " and userId: " + userId));
 
-        // 삭제 전에 리뷰와 연결된 이미지를 삭제합니다.
+        // 삭제 전 리뷰와 연결된 이미지 삭제
         List<BusinessReviewImages> reviewImages = businessReviewImagesRepository.findByReview(review);
         businessReviewImagesRepository.deleteAll(reviewImages);
 
