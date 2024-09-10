@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateBusinessReviewRequest {
+
     private Long businessId;
     private Long userId;
     private Integer rating;

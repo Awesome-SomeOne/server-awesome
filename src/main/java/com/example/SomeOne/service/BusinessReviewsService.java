@@ -1,25 +1,34 @@
 package com.example.SomeOne.service;
 
+import com.example.SomeOne.domain.BusinessReviewImages;
 import com.example.SomeOne.domain.BusinessReviews;
 import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.Users;
 import com.example.SomeOne.dto.Businesses.request.CreateBusinessReviewRequest;
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
 import com.example.SomeOne.exception.ResourceNotFoundException;
+import com.example.SomeOne.repository.BusinessReviewImagesRepository;
 import com.example.SomeOne.repository.BusinessReviewsRepository;
 import com.example.SomeOne.repository.BusinessesRepository;
 import com.example.SomeOne.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BusinessReviewsService {
 
     private final BusinessReviewsRepository businessReviewsRepository;
+    private final BusinessReviewImagesRepository businessReviewImagesRepository;
     private final BusinessesRepository businessRepository;
     private final UserRepository userRepository;
+    private final S3ImageUploadService s3ImageUploadService;
 
     public BusinessReviewResponse getBusinessReview(Long businessId, Long userId) {
         Businesses business = businessRepository.findById(businessId)
@@ -31,6 +40,11 @@ public class BusinessReviewsService {
         BusinessReviews review = businessReviewsRepository.findByBusinessAndUser(business, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Business review not found for businessId: " + businessId + " and userId: " + userId));
 
+        List<String> imageUrls = businessReviewImagesRepository.findByReview(review)
+                .stream()
+                .map(BusinessReviewImages::getImageUrl)
+                .collect(Collectors.toList());
+
         return BusinessReviewResponse.builder()
                 .id(review.getReviewId())
                 .businessId(review.getBusiness().getBusiness_id())
@@ -38,11 +52,12 @@ public class BusinessReviewsService {
                 .rating(review.getRating())
                 .shortReview(review.getShortReview())
                 .detailedReview(review.getDetailedReview())
+                .imageUrls(imageUrls)
                 .build();
     }
 
     @Transactional
-    public BusinessReviewResponse createOrUpdateBusinessReview(CreateBusinessReviewRequest request) {
+    public BusinessReviewResponse createOrUpdateBusinessReview(CreateBusinessReviewRequest request, List<MultipartFile> images) {
         Businesses business = businessRepository.findById(request.getBusinessId())
                 .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + request.getBusinessId()));
 
@@ -67,6 +82,14 @@ public class BusinessReviewsService {
                     return businessReviewsRepository.save(newReview);
                 });
 
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile image : images) {
+            String imageUrl = s3ImageUploadService.saveImage(image);
+            imageUrls.add(imageUrl);
+            BusinessReviewImages reviewImage = new BusinessReviewImages(review, imageUrl);
+            businessReviewImagesRepository.save(reviewImage);
+        }
+
         return BusinessReviewResponse.builder()
                 .id(review.getReviewId())
                 .businessId(review.getBusiness().getBusiness_id())
@@ -74,6 +97,7 @@ public class BusinessReviewsService {
                 .rating(review.getRating())
                 .shortReview(review.getShortReview())
                 .detailedReview(review.getDetailedReview())
+                .imageUrls(imageUrls)
                 .build();
     }
 
@@ -87,6 +111,10 @@ public class BusinessReviewsService {
 
         BusinessReviews review = businessReviewsRepository.findByBusinessAndUser(business, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Business review not found for businessId: " + businessId + " and userId: " + userId));
+
+        // 삭제 전에 리뷰와 연결된 이미지를 삭제합니다.
+        List<BusinessReviewImages> reviewImages = businessReviewImagesRepository.findByReview(review);
+        businessReviewImagesRepository.deleteAll(reviewImages);
 
         businessReviewsRepository.delete(review);
     }
