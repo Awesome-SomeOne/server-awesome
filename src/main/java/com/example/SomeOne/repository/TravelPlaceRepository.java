@@ -1,6 +1,7 @@
 package com.example.SomeOne.repository;
 
 import com.example.SomeOne.domain.TravelPlace;
+import com.example.SomeOne.domain.TravelPlans;
 import com.example.SomeOne.domain.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +23,7 @@ public interface TravelPlaceRepository extends JpaRepository<TravelPlace, Long> 
             "WHERE u.id = :userId " +
             "AND b.business_name LIKE %:businessName%")
     List<TravelPlace> findByUserIdAndBusinessNameContaining(@Param("userId") Long userId, @Param("businessName") String businessName);
+    List<TravelPlace> findByTravelPlans(TravelPlans travelPlans);
 }
 
 

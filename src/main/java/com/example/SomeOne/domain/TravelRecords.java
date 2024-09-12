@@ -37,13 +37,18 @@ public class TravelRecords {
 
     private Boolean isReported = false; // 신고 상태
 
-    @OneToOne(mappedBy = "travelRecord", cascade = CascadeType.ALL, orphanRemoval = true)
-    private IslandReviews islandReview;  // TravelRecords와 연결된 섬 리뷰
 
-    // 기록 생성 시 리뷰 추가
-    public void addIslandReview(IslandReviews islandReview) {
-        this.islandReview = islandReview;
-        islandReview.setTravelRecord(this);
+    @OneToMany(mappedBy = "travelRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BusinessReviews> businessReviews = new ArrayList<>();
+
+
+    public void addBusinessReview(BusinessReviews review) {
+        if (review != null) {
+            if (review.getTravelRecord() != this) {
+                review.setTravelRecord(this);
+            }
+            businessReviews.add(review);
+        }
     }
 
     @Builder
@@ -56,8 +61,10 @@ public class TravelRecords {
     }
 
     public void addRecordImage(RecordImages recordImage) {
-        this.recordImages.add(recordImage);
-        recordImage.setRecord(this);
+        if (!recordImages.contains(recordImage)) {
+            recordImages.add(recordImage);
+            recordImage.setRecord(this);
+        }
     }
 
     public void addReport(Report report) {

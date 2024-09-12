@@ -8,26 +8,30 @@ import lombok.AllArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RecordImages {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long imageId;
 
-    @Id @GeneratedValue
-    private Long image_id;
+    private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "record_id")
     private TravelRecords record;
 
-    @Column(length = 1000)  // URL 길이를 1000자로 늘림
-    private String image_url;
-
-    @Builder
-    public RecordImages(String image_url) {
-        this.image_url = image_url;
-    }
+    // Other fields and methods
 
     public void setRecord(TravelRecords record) {
+        if (this.record != null) {
+            this.record.getRecordImages().remove(this);
+        }
         this.record = record;
+        if (record != null) {
+            record.getRecordImages().add(this);
+        }
     }
+
 }

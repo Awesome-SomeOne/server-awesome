@@ -1,5 +1,6 @@
 package com.example.SomeOne.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,13 +30,31 @@ public class BusinessReviews {
 
     private String businessReview;
 
+    // TravelRecords와의 연관 관계 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "travel_record_id")
+    @JsonBackReference
+    private TravelRecords travelRecord;
 
     @Builder
-    public BusinessReviews(Businesses business, Users user, Integer rating, String businessReview) {
+    public BusinessReviews(Businesses business, Users user, Integer rating, String businessReview, TravelRecords travelRecord) {
         this.business = business;
         this.user = user;
         this.rating = rating;
         this.businessReview = businessReview;
+        this.travelRecord = travelRecord;
+    }
 
+    // 양방향 연관 관계 설정
+    public void setTravelRecord(TravelRecords travelRecord) {
+        if (this.travelRecord != travelRecord) {
+            if (this.travelRecord != null) {
+                this.travelRecord.getBusinessReviews().remove(this);
+            }
+            this.travelRecord = travelRecord;
+            if (travelRecord != null) {
+                travelRecord.getBusinessReviews().add(this);
+            }
+        }
     }
 }

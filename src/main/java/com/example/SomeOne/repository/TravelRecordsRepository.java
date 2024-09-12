@@ -20,4 +20,6 @@ public interface TravelRecordsRepository extends JpaRepository<TravelRecords, Lo
     List<TravelRecords> findByUserAndPublicPrivateOrderByRecordIdDesc(Users user, Boolean publicPrivate);
 
     List<TravelRecords> findByPlanAndPublicPrivateOrderByRecordIdDesc(TravelPlans plan, Boolean publicPrivate);
+
+
 }
