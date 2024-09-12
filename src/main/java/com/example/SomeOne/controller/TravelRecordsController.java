@@ -48,13 +48,13 @@ public class TravelRecordsController {
     @GetMapping("/share/{recordId}")
     public String shareRecord(@PathVariable Long recordId) {
         // 여행 기록의 ID로 공유 가능한 URL 생성
-        String shareableUrl = "http://localhost:8080/api/travel-records/view/" + recordId;
+        String shareableUrl = "http://awesome-island.duckdns.org/api/travel-records/view/" + recordId;
         return shareableUrl;
     }
 
     // 여행 기록 조회
     @GetMapping("/view/{recordId}")
-    public TravelRecordResponse getTravelRecordById(@PathVariable Long recordId) {
+    public TravelRecordResponse getRecordById(@PathVariable Long recordId) {
         return travelRecordsService.getRecordById(recordId);
     }
 

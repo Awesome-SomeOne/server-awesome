@@ -90,27 +90,24 @@ public class TravelRecordsService {
     }
 
     // 비즈니스 리뷰 처리 메서드
-    private List<BusinessReviewResponse> handleBusinessReviews(TravelPlans plan, Users user, TravelRecords savedRecord, CreateTravelRecordRequest request) {
+    private List<BusinessReviewResponse> handleBusinessReviews(TravelPlans plan, Users user, TravelRecords record, CreateTravelRecordRequest request) {
         List<BusinessReviewResponse> businessReviewResponses = new ArrayList<>();
         List<TravelPlace> travelPlaces = travelPlaceRepository.findByTravelPlans(plan);
+
         for (TravelPlace travelPlace : travelPlaces) {
             Businesses business = travelPlace.getBusinesses();
             if (business != null) {
                 Optional<BusinessReviews> existingReview = businessReviewsRepository.findByBusinessAndUser(business, user);
                 BusinessReviews businessReview = existingReview.orElseGet(() -> {
-                    BusinessReviews newReview = BusinessReviews.builder()
-                            .business(business)
-                            .user(user)
-                            .rating(request.getRating())
-                            .businessReview(request.getBusinessReview())
-                            .build();
-                    newReview.setTravelRecord(savedRecord);
-                    return businessReviewsRepository.save(newReview);
+                    // request가 null인 경우, 기본값으로 비즈니스 리뷰를 생성하지 않고, 이미 존재하는 리뷰를 가져옵니다.
+                    return null;
                 });
 
-                List<BusinessReviewImages> reviewImages = businessReviewImagesRepository.findByReview(businessReview);
-                BusinessReviewResponse businessReviewResponse = BusinessReviewResponse.fromEntity(businessReview, reviewImages);
-                businessReviewResponses.add(businessReviewResponse);
+                if (businessReview != null) {
+                    List<BusinessReviewImages> reviewImages = businessReviewImagesRepository.findByReview(businessReview);
+                    BusinessReviewResponse businessReviewResponse = BusinessReviewResponse.fromEntity(businessReview, reviewImages);
+                    businessReviewResponses.add(businessReviewResponse);
+                }
             }
         }
         return businessReviewResponses;
