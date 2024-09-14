@@ -23,38 +23,43 @@ public class PopularityService {
 
     private final BusinessesRepository businessesRepository;
     private final BusinessReviewsRepository businessReviewsRepository;
+    private final FavoritesService favoritesService;
 
-    public List<PopularityPlaceResponse> listLandmark(Long islandId) {
+    public List<PopularityPlaceResponse> listLandmark(Long userId, Long islandId) {
         List<Businesses> businessesList = businessesRepository.
                 findByIslandIdAndBusinessTypeOrderByRatingDesc(islandId, Business_category.관광지);
 
         return businessesList.stream()
                 .map(business -> {
                     Double averageRating = businessesRepository.findAverageRatingByBusinessId(business.getBusiness_id());
+                    boolean status = favoritesService.findFavorite(userId, business.getBusiness_id());
                     return new PopularityPlaceResponse(
                             business.getBusiness_id(),
                             business.getBusiness_name(),
                             business.getAddress(),
                             business.getBusinessType(),
-                            averageRating != null ? averageRating : 0.0
+                            averageRating != null ? averageRating : 0.0,
+                            status
                     );
                 })
                 .collect(Collectors.toList());
     }
 
-    public List<PopularityPlaceResponse> recommendPlaceList(Long islandId, Business_category category) {
+    public List<PopularityPlaceResponse> recommendPlaceList(Long userId, Long islandId, Business_category category) {
         List<Businesses> businessesList = businessesRepository.
                 findByIslandIdAndBusinessTypeOrderByRatingDesc(islandId, category);
 
         return businessesList.stream()
                 .map(business -> {
                     Double averageRating = businessesRepository.findAverageRatingByBusinessId(business.getBusiness_id());
+                    boolean status = favoritesService.findFavorite(userId, business.getBusiness_id());
                     return new PopularityPlaceResponse(
                             business.getBusiness_id(),
                             business.getBusiness_name(),
                             business.getAddress(),
                             business.getBusinessType(),
-                            averageRating != null ? averageRating : 0.0
+                            averageRating != null ? averageRating : 0.0,
+                            status
                     );
                 })
                 .collect(Collectors.toList());

@@ -4,6 +4,7 @@ import com.example.SomeOne.domain.*;
 import com.example.SomeOne.dto.TravelPlans.request.TravelPlanRequest;
 import com.example.SomeOne.dto.TravelPlans.response.GetTravelPlanResponse;
 import com.example.SomeOne.dto.TravelPlans.response.GetPlansResponse;
+import com.example.SomeOne.dto.TravelPlans.response.SaveTravelResponse;
 import com.example.SomeOne.dto.TravelPlans.response.TravelPlaceResponse;
 import com.example.SomeOne.dto.weather.WeatherNowDTO;
 import com.example.SomeOne.repository.TravelPlansRepository;
@@ -28,7 +29,7 @@ public class TravelPlansService {
     private final WeatherService weatherService;
 
     @Transactional
-    public Long save(TravelPlanRequest request) {
+    public SaveTravelResponse save(TravelPlanRequest request) {
         Island island = islandService.findById(request.getIslandId());
 
         TravelPlans travelPlan = new TravelPlans(new Users(), request.getPlanName(), request.getStartDate(),
@@ -36,7 +37,7 @@ public class TravelPlansService {
 
         travelPlansRepository.save(travelPlan);
 
-        return travelPlan.getPlanId();
+        return new SaveTravelResponse(travelPlan.getPlanId());
     }
 
     public List<GetPlansResponse> getPlan(Long userId) {
@@ -62,6 +63,8 @@ public class TravelPlansService {
         String planName = travelPlans.getPlan_name();
         String islandName = travelPlans.getIsland().getName();
         List<TravelPlace> travelPlaceList = travelPlaceService.findByTravelPlan(planId);
+        LocalDate startDate = travelPlans.getStartDate();
+        LocalDate endDate = travelPlans.getEndDate();
 
         List<TravelPlaceResponse> responseList = travelPlaceList.stream().map(p -> {
 
@@ -84,7 +87,7 @@ public class TravelPlansService {
             );
         }).collect(Collectors.toList());
 
-        return new GetTravelPlanResponse(planName, islandName, responseList);
+        return new GetTravelPlanResponse(planName, islandName, startDate, endDate, responseList);
     }
 
     public class CoordinateParser {

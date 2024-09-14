@@ -2,7 +2,6 @@ package com.example.SomeOne.service;
 
 import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.Favorites;
-import com.example.SomeOne.domain.Favorites;
 import com.example.SomeOne.domain.Users;
 
 import com.example.SomeOne.dto.Favorites.response.FavoriteResponse;
@@ -39,6 +38,15 @@ public class FavoritesService {
             Favorites favorite = new Favorites(user, business);
             favoriteRepository.save(favorite);
         }
+    }
+
+    public boolean findFavorite(Long userId, Long businessId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        Businesses business = businessesRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
+
+        return favoriteRepository.existsByUserAndBusiness(user, business);
     }
 
     @Transactional

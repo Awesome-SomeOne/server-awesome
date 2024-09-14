@@ -6,11 +6,8 @@ import com.example.SomeOne.dto.Businesses.request.RecommendPlaceRequest;
 import com.example.SomeOne.dto.Businesses.response.FamousPlaceResponse;
 import com.example.SomeOne.dto.Businesses.response.FindBusinessesResponse;
 import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
-import com.example.SomeOne.dto.TravelPlans.response.RandomIslandResponse;
+import com.example.SomeOne.dto.TravelPlans.response.*;
 import com.example.SomeOne.dto.TravelPlans.request.*;
-import com.example.SomeOne.dto.TravelPlans.response.FindIslandResponse;
-import com.example.SomeOne.dto.TravelPlans.response.GetTravelPlanResponse;
-import com.example.SomeOne.dto.TravelPlans.response.GetPlansResponse;
 import com.example.SomeOne.service.BusinessesService;
 import com.example.SomeOne.service.IslandService;
 import com.example.SomeOne.service.TravelPlaceService;
@@ -36,7 +33,7 @@ public class TravelController {
     }
 
     @PostMapping("/save")
-    public Long savePlan(@RequestBody TravelPlanRequest request) {
+    public SaveTravelResponse savePlan(@RequestBody TravelPlanRequest request) {
         return travelPlansService.save(request);
     }
 
