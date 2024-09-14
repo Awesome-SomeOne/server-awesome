@@ -3,9 +3,11 @@ package com.example.SomeOne.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 public class Favorites {
 
@@ -17,6 +19,6 @@ public class Favorites {
     private Users user;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "business_id")
-    private Businesses business;
+    @JoinColumn(name = "post_id")
+    private CommunityPosts post;
 }
