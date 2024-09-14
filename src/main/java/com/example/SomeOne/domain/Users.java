@@ -16,7 +16,7 @@ public class Users {
 
     @Id
     @GeneratedValue
-    private Long users_id;
+    private Long users_id; //키값
 
     private String username;  // 로그인 시 사용하는 이름
     private String password;
@@ -24,7 +24,7 @@ public class Users {
     private String nickname;  // 별명
     private String profile_image;
     private Boolean social_login;
-    private String userId;
+    private String userId; // 닉네임
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "island_id")

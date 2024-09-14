@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-public class TravelPlans {
+public class TravelPlans { //여행기록
 
     @Id @GeneratedValue
     private Long planId;

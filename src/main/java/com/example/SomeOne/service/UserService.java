@@ -33,15 +33,23 @@ public class UserService {
     private final UserRepository userRepository;
 
     public LoginResponse doSocialLogin(SocialLoginRequest request) {
+        // 인가 코드 로그
+        log.info("Authorization code received: {}", request.getCode());
+
         SocialLoginService loginService = this.getLoginService(request.getUserType());
 
+        //인가코드로 토큰 생성
         SocialAuthResponse socialAuthResponse = loginService.getAccessToken(request.getCode());
+        log.info("Access token received: {}", socialAuthResponse.getAccess_token());
 
+        //토큰으로 카카오에 유저 정보 요청
         SocialUserResponse socialUserResponse = loginService.getUserInfo(socialAuthResponse.getAccess_token());
         log.info("socialUserResponse: {}", socialUserResponse);
 
+        //받아온 유저정보로 이미 디비에서 찾기
         Optional<Users> existingUser = userRepository.findByUserId(socialUserResponse.getId());
 
+        //없는정보 -> 회원가입 (데이터 생성)
         if (existingUser.isEmpty()) {
             // 새로운 사용자 저장
             this.joinUser(UserJoinRequest.builder()
@@ -52,9 +60,11 @@ public class UserService {
                     .build());
         }
 
+        //유저 검색
         Users user = userRepository.findByUserId(socialUserResponse.getId())
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
+        //검색된 유저의 아이디값을 반환
         return LoginResponse.builder()
                 .id(user.getUsers_id())
                 .build();

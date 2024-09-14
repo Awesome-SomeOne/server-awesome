@@ -49,6 +49,9 @@ dependencies {
 	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
 	implementation 'org.glassfish:jakarta.el:4.0.2'
 	implementation 'com.google.code.gson:gson:2.8.9'
+
+	implementation 'org.springframework.boot:spring-boot-starter-logging'  // 기본 로그 의존성
+
 }
 
 

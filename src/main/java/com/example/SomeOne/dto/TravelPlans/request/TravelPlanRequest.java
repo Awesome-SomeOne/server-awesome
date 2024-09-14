@@ -14,4 +14,5 @@ public class TravelPlanRequest {
     private LocalDate startDate;
     private LocalDate endDate;
     private String planName;
+    private Long useId;
 }

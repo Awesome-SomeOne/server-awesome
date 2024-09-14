@@ -20,7 +20,9 @@ import java.net.URI;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/social-login")
+    @PostMapping("/social-login") //여기
+
+    //
     public ResponseEntity<LoginResponse> doSocialLogin(@RequestBody @Valid SocialLoginRequest request) {
 
         return ResponseEntity.created(URI.create("/social-login"))
@@ -35,9 +37,9 @@ public class UserController {
     }
 
 
+    @CrossOrigin(origins = "https://awesome-island.duckdns.org")
     @GetMapping("/kakao/callback")
     public ResponseEntity<LoginResponse> kakaoCallback(@RequestParam(value = "code") String code) {
-        // 받은 인가 코드로 로그인 처리 로직
         SocialLoginRequest request = new SocialLoginRequest(UserType.KAKAO, code);
         return ResponseEntity.ok(userService.doSocialLogin(request));
     }

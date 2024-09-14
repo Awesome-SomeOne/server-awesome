@@ -12,7 +12,7 @@ import lombok.ToString;
 @Getter
 @ToString
 public class SocialUserResponse {
-    private String id;
+    private String id; //닉네임
     private String email;
     private String name;
     private String gender;
