@@ -28,13 +28,15 @@ public class TravelPlansService {
     private final WeatherService weatherService;
 
     @Transactional
-    public void save(TravelPlanRequest request) {
+    public Long save(TravelPlanRequest request) {
         Island island = islandService.findById(request.getIslandId());
 
         TravelPlans travelPlan = new TravelPlans(new Users(), request.getPlanName(), request.getStartDate(),
                 request.getEndDate(), island);
 
         travelPlansRepository.save(travelPlan);
+
+        return travelPlan.getPlanId();
     }
 
     public List<GetPlansResponse> getPlan(Long userId) {
