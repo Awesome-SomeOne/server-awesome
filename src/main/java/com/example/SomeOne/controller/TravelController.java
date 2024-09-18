@@ -1,8 +1,5 @@
 package com.example.SomeOne.controller;
 
-import com.example.SomeOne.dto.Businesses.request.FamousPlaceRequest;
-import com.example.SomeOne.dto.Businesses.request.FindBusinessesRequest;
-import com.example.SomeOne.dto.Businesses.request.RecommendPlaceRequest;
 import com.example.SomeOne.dto.Businesses.response.FamousPlaceResponse;
 import com.example.SomeOne.dto.Businesses.response.FindBusinessesResponse;
 import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
@@ -13,6 +10,7 @@ import com.example.SomeOne.service.IslandService;
 import com.example.SomeOne.service.TravelPlaceService;
 import com.example.SomeOne.service.TravelPlansService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,80 +26,93 @@ public class TravelController {
     private final TravelPlaceService travelPlaceService;
 
     @GetMapping("/findIsland")
-    public List<FindIslandResponse> findIsland(@RequestParam("keyword") String keyword) {
-        return islandService.findIsland(keyword);
+    public ResponseEntity<List<FindIslandResponse>> findIsland(@RequestParam("keyword") String keyword) {
+        List<FindIslandResponse> response = islandService.findIsland(keyword);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/save")
-    public SaveTravelResponse savePlan(@RequestBody TravelPlanRequest request) {
-        return travelPlansService.save(request);
+    public ResponseEntity<SaveTravelResponse> savePlan(@RequestBody TravelPlanRequest request) {
+        SaveTravelResponse response = travelPlansService.save(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/findPlace")
-    public List<FindBusinessesResponse> findPlace(@RequestParam("keyword") String keyword) {
-        return businessesService.findBusinesses(keyword);
+    public ResponseEntity<List<FindBusinessesResponse>> findPlace(@RequestParam("keyword") String keyword) {
+        List<FindBusinessesResponse> response = businessesService.findBusinesses(keyword);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/recommend/place")
-    public List<RecommendPlaceResponse> recommendPlace(@RequestParam("islandId") Long islandId,
-                                                       @RequestParam("category") String category) {
-        return businessesService.recommendPlace(islandId, category);
+    public ResponseEntity<List<RecommendPlaceResponse>> recommendPlace(@RequestParam("islandId") Long islandId,
+                                                                       @RequestParam("category") String category) {
+        List<RecommendPlaceResponse> response = businessesService.recommendPlace(islandId, category);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/recommend/island")
-    public RandomIslandResponse recommendIsland() {
-        return islandService.randomIsland();
+    public ResponseEntity<RandomIslandResponse> recommendIsland() {
+        RandomIslandResponse response = islandService.randomIsland();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/famous/place")
-    public List<FamousPlaceResponse> famousPlace(@RequestParam("islandId") Long islandId) {
-        return businessesService.famousPlace(islandId);
+    public ResponseEntity<List<FamousPlaceResponse>> famousPlace(@RequestParam("islandId") Long islandId) {
+        List<FamousPlaceResponse> response = businessesService.famousPlace(islandId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/plans")
-    public List<GetPlansResponse> getPlans(@RequestBody Long userId) {
-        // login 관련해서 다른 개발자와 코드 merge 후 수정
-        return travelPlansService.getPlan(userId);
+    public ResponseEntity<List<GetPlansResponse>> getPlans(@RequestBody Long userId) {
+        List<GetPlansResponse> response = travelPlansService.getPlan(userId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/plan")
-    public GetTravelPlanResponse getPlan(@RequestParam("planId") Long planId) {
-        return travelPlansService.findTravelPlan(planId);
+    public ResponseEntity<GetTravelPlanResponse> getPlan(@RequestParam("planId") Long planId) {
+        GetTravelPlanResponse response = travelPlansService.findTravelPlan(planId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/addPlace")
-    public void addPlace(@RequestBody AddPlaceRequest request) {
+    public ResponseEntity<Void> addPlace(@RequestBody AddPlaceRequest request) {
         travelPlaceService.addPlace(request.getTravelPlanId(), request.getBusinessId(), request.getDate());
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/addManyPlace")
-    public void addManyPlace(@RequestBody AddManyPlaceRequest request) {
+    public ResponseEntity<Void> addManyPlace(@RequestBody AddManyPlaceRequest request) {
         travelPlaceService.addManyPlaces(request.getTravelPlanId(), request.getBusinessIds(), request.getDate());
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/deletePlace")
-    public void deletePlace(@RequestBody DeletePlaceRequest request) {
+    public ResponseEntity<Void> deletePlace(@RequestBody DeletePlaceRequest request) {
         travelPlaceService.deletePlace(request.getTravelPlaceId());
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/update/date")
-    public void updateDate(@RequestBody UpdateDateRequest request) {
-        travelPlaceService.updateDate(request.getTravelPlaceId(), request.getTravelPlanId(), request.getBusinessId(),
-                request.getDate());
+    public ResponseEntity<Void> updateDate(@RequestBody UpdateDateRequest request) {
+        travelPlaceService.updateDate(request.getTravelPlaceId(), request.getTravelPlanId(), request.getBusinessId(), request.getDate());
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/change/order")
-    public void changeOrder(@RequestBody ChangeOrderRequest request) {
+    public ResponseEntity<Void> changeOrder(@RequestBody ChangeOrderRequest request) {
         travelPlaceService.changeOrder(request.getTravelPlaceId(), request.getOrder());
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/update/place")
-    public void updatePlace(@RequestBody List<UpdatePlaceRequest> request) {
+    public ResponseEntity<Void> updatePlace(@RequestBody List<UpdatePlaceRequest> request) {
         travelPlaceService.updatePlace(request);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/delete/travel")
-    public void deleteTravel(@RequestBody DeletePlanRequest request) {
+    public ResponseEntity<Void> deleteTravel(@RequestBody DeletePlanRequest request) {
         travelPlansService.delete(request.getPlanId());
+        return ResponseEntity.ok().build();
     }
 }

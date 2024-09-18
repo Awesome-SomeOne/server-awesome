@@ -38,6 +38,7 @@ public class PopularityService {
                             business.getBusiness_name(),
                             business.getAddress(),
                             business.getBusinessType(),
+                            business.getImg_url(),
                             averageRating != null ? averageRating : 0.0,
                             status
                     );
@@ -58,6 +59,7 @@ public class PopularityService {
                             business.getBusiness_name(),
                             business.getAddress(),
                             business.getBusinessType(),
+                            business.getImg_url(),
                             averageRating != null ? averageRating : 0.0,
                             status
                     );

@@ -36,7 +36,7 @@ public class BusinessesService {
 
         return businessesList.stream()
                 .map(business -> new RecommendPlaceResponse(business.getBusiness_id(), business.getBusiness_name(),
-                        business.getAddress(), business.getX_address(), business.getY_address(),
+                        business.getAddress(), business.getX_address(), business.getY_address(), business.getImg_url(),
                         business.getBusinessType())).collect(Collectors.toList());
     }
 
