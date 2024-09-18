@@ -12,5 +12,7 @@ public class RecommendPlaceResponse {
     private Long id;
     private String name;
     private String address;
+    private String x_address;
+    private String y_address;
     private Business_category category;
 }

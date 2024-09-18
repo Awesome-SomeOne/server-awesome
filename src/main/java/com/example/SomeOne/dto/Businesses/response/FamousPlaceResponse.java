@@ -13,5 +13,7 @@ public class FamousPlaceResponse {
     private String name;
     private Business_category businessCategory;
     private String address;
+    private String x_address;
+    private String y_address;
     private String imgUrl;
 }

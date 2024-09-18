@@ -25,7 +25,8 @@ public class BusinessesService {
         List<Businesses> businessesList = businessesRepository.findByKeyword(keyword);
 
         return businessesList.stream()
-                .map(business -> new FindBusinessesResponse(business.getBusiness_id(), business.getBusiness_name(), business.getAddress(),
+                .map(business -> new FindBusinessesResponse(business.getBusiness_id(), business.getBusiness_name(),
+                        business.getAddress(), business.getX_address(), business.getY_address(),
                         business.getBusinessType())).collect(Collectors.toList());
     }
 
@@ -34,7 +35,8 @@ public class BusinessesService {
                 Business_category.valueOf(category));
 
         return businessesList.stream()
-                .map(business -> new RecommendPlaceResponse(business.getBusiness_id(), business.getBusiness_name(), business.getAddress(),
+                .map(business -> new RecommendPlaceResponse(business.getBusiness_id(), business.getBusiness_name(),
+                        business.getAddress(), business.getX_address(), business.getY_address(),
                         business.getBusinessType())).collect(Collectors.toList());
     }
 
@@ -49,6 +51,7 @@ public class BusinessesService {
         List<Businesses> fiveList = businessesList.stream().limit(5).collect(Collectors.toList());
 
         return fiveList.stream().map(b -> new FamousPlaceResponse(b.getBusiness_id(), b.getBusiness_name(), b.getBusinessType(),
-                b.getAddress(), b.getImg_url())).collect(Collectors.toList());
+                b.getAddress(), b.getX_address(), b.getY_address(),
+                b.getImg_url())).collect(Collectors.toList());
     }
 }
