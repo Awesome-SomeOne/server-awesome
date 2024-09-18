@@ -6,11 +6,8 @@ import com.example.SomeOne.dto.Businesses.request.RecommendPlaceRequest;
 import com.example.SomeOne.dto.Businesses.response.FamousPlaceResponse;
 import com.example.SomeOne.dto.Businesses.response.FindBusinessesResponse;
 import com.example.SomeOne.dto.Businesses.response.RecommendPlaceResponse;
-import com.example.SomeOne.dto.TravelPlans.response.RandomIslandResponse;
+import com.example.SomeOne.dto.TravelPlans.response.*;
 import com.example.SomeOne.dto.TravelPlans.request.*;
-import com.example.SomeOne.dto.TravelPlans.response.FindIslandResponse;
-import com.example.SomeOne.dto.TravelPlans.response.GetTravelPlanResponse;
-import com.example.SomeOne.dto.TravelPlans.response.GetPlansResponse;
 import com.example.SomeOne.service.BusinessesService;
 import com.example.SomeOne.service.IslandService;
 import com.example.SomeOne.service.TravelPlaceService;
@@ -31,23 +28,24 @@ public class TravelController {
     private final TravelPlaceService travelPlaceService;
 
     @GetMapping("/findIsland")
-    public List<FindIslandResponse> findIsland(@RequestBody FindIslandRequest request) {
-        return islandService.findIsland(request.getKeyword());
+    public List<FindIslandResponse> findIsland(@RequestParam("keyword") String keyword) {
+        return islandService.findIsland(keyword);
     }
 
     @PostMapping("/save")
-    public void savePlan(@RequestBody TravelPlanRequest request) {
-        travelPlansService.save(request);
+    public SaveTravelResponse savePlan(@RequestBody TravelPlanRequest request) {
+        return travelPlansService.save(request);
     }
 
     @GetMapping("/findPlace")
-    public List<FindBusinessesResponse> findPlace(@RequestBody FindBusinessesRequest request) {
-        return businessesService.findBusinesses(request.getKeyword());
+    public List<FindBusinessesResponse> findPlace(@RequestParam("keyword") String keyword) {
+        return businessesService.findBusinesses(keyword);
     }
 
     @GetMapping("/recommend/place")
-    public List<RecommendPlaceResponse> recommendPlace(@RequestBody RecommendPlaceRequest request) {
-        return businessesService.recommendPlace(request.getIslandId(), request.getCategory());
+    public List<RecommendPlaceResponse> recommendPlace(@RequestParam("islandId") Long islandId,
+                                                       @RequestParam("category") String category) {
+        return businessesService.recommendPlace(islandId, category);
     }
 
     @GetMapping("/recommend/island")
@@ -56,8 +54,8 @@ public class TravelController {
     }
 
     @GetMapping("/famous/place")
-    public List<FamousPlaceResponse> famousPlace(@RequestBody FamousPlaceRequest request) {
-        return businessesService.famousPlace(request.getIslandId());
+    public List<FamousPlaceResponse> famousPlace(@RequestParam("islandId") Long islandId) {
+        return businessesService.famousPlace(islandId);
     }
 
     @GetMapping("/plans")
@@ -67,8 +65,8 @@ public class TravelController {
     }
 
     @GetMapping("/plan")
-    public GetTravelPlanResponse getPlan(@RequestBody GetPlanRequest request) {
-        return travelPlansService.findTravelPlan(request.getPlanId());
+    public GetTravelPlanResponse getPlan(@RequestParam("planId") Long planId) {
+        return travelPlansService.findTravelPlan(planId);
     }
 
     @PostMapping("/addPlace")

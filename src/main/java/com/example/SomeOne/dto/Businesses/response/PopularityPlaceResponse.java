@@ -14,4 +14,5 @@ public class PopularityPlaceResponse {
     private String address;
     private Business_category category;
     private Double rating;
+    private Boolean status;
 }

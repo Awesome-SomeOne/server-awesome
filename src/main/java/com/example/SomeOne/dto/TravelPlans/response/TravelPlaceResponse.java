@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class TravelPlaceResponse {
     private Long id;
-    private String placeName;
+    private String name;
     private String address;
     private String x_address;
     private String y_address;

@@ -2,10 +2,10 @@ package com.example.SomeOne.service;
 
 import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.Favorites;
-import com.example.SomeOne.domain.Favorites;
 import com.example.SomeOne.domain.Users;
 
 import com.example.SomeOne.dto.Favorites.response.FavoriteResponse;
+import com.example.SomeOne.dto.TravelPlans.response.LikeResponse;
 import com.example.SomeOne.exception.ResourceNotFoundException;
 import com.example.SomeOne.repository.BusinessesRepository;
 
@@ -38,6 +38,33 @@ public class FavoritesService {
         if (!isAlreadyFavorite) {
             Favorites favorite = new Favorites(user, business);
             favoriteRepository.save(favorite);
+        }
+    }
+
+    public boolean findFavorite(Long userId, Long businessId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        Businesses business = businessesRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
+
+        return favoriteRepository.existsByUserAndBusiness(user, business);
+    }
+
+    @Transactional
+    public LikeResponse updateLike(Long userId, Long businessId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        Businesses business = businessesRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
+
+        boolean status = favoriteRepository.existsByUserAndBusiness(user, business);
+        if (status) {
+            removeFavorite(userId, businessId);
+            return new LikeResponse(Boolean.FALSE);
+        }
+        else {
+            addFavorite(userId, businessId);
+            return new LikeResponse(Boolean.TRUE);
         }
     }
 
