@@ -13,6 +13,7 @@ public class PopularityPlaceResponse {
     private String name;
     private String address;
     private Business_category category;
+    private String imgUrl;
     private Double rating;
     private Boolean status;
 }
