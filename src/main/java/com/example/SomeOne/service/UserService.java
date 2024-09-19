@@ -170,6 +170,30 @@ public class UserService {
         }
     }
 
+    public LoginResponse refreshToken(String refreshToken) {
+        // 리프레시 토큰 검증
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new IllegalArgumentException("Invalid Refresh Token");
+        }
+
+        // 리프레시 토큰에서 사용자 ID 추출
+        String userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+
+        // 사용자 정보 조회
+        Users user = userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+        // 새로운 액세스 토큰 생성
+        String newAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
+
+        // 응답 반환
+        return LoginResponse.builder()
+                .id(user.getUsers_id())
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken)  // 기존 리프레시 토큰 유지
+                .build();
+    }
+
 }
 
 
