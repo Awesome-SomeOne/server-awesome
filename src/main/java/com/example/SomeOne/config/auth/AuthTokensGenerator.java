@@ -21,8 +21,9 @@ public class AuthTokensGenerator {
         Date accessTokenExpiryDate = new Date(now + ACCESS_TOKEN_EXPIRATION_TIME);
         Date refreshTokenExpiryDate = new Date(now + REFRESH_TOKEN_EXPIRATION_TIME);
 
+        // `uid`로 Access Token과 Refresh Token 생성
         String accessToken = jwtTokenProvider.generateAccessToken(uid, accessTokenExpiryDate);
-        String refreshToken = jwtTokenProvider.generateRefreshToken(refreshTokenExpiryDate);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(uid, refreshTokenExpiryDate);
 
         return AuthTokens.of(accessToken, refreshToken, BEARER_TYPE, ACCESS_TOKEN_EXPIRATION_TIME / 1000L);
     }

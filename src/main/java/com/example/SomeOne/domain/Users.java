@@ -25,6 +25,7 @@ public class Users {
     private String profile_image;
     private Boolean social_login;
     private String userId;
+    private String refreshToken;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "island_id")
@@ -33,4 +34,8 @@ public class Users {
     @Enumerated(EnumType.STRING)  // 열거형을 문자열로 저장
     @Column(columnDefinition = "VARCHAR(255) DEFAULT 'NORMAL'")  // 기본값을 NORMAL로 설정
     private UserType userType;
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }

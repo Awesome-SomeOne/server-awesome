@@ -39,30 +39,34 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public LoginResponse doSocialLogin(SocialLoginRequest request) {
-        // 적절한 SocialLoginService 가져오기
         SocialLoginService loginService = this.getLoginService(request.getUserType());
 
         // Access Token과 사용자 정보 가져오기
         SocialAuthResponse socialAuthResponse = loginService.getAccessToken(request.getCode());
         SocialUserResponse socialUserResponse = loginService.getUserInfo(socialAuthResponse.getAccess_token());
-        log.info("socialUserResponse: {}", socialUserResponse);
 
         // 사용자 조회 및 없는 경우 새 사용자 등록
         Users user = userRepository.findByUserId(socialUserResponse.getId())
                 .orElseGet(() -> this.joinUser(UserJoinRequest.builder()
                         .userId(socialUserResponse.getId())
-                        .userEmail(socialUserResponse.getEmail())  // 이메일 없는 경우 처리
-                        .userName(socialUserResponse.getName())  // username 사용
+                        .userEmail(socialUserResponse.getEmail())
+                        .userName(socialUserResponse.getName())
                         .userType(request.getUserType())
                         .build()));
 
-        // JWT 생성
+        // JWT 생성 (Access Token과 Refresh Token 생성)
         String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
+        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
+
+        // 사용자 객체에 리프레시 토큰 저장
+        user.setRefreshToken(refreshToken);
+        userRepository.save(user);
 
         // 로그인 응답 생성
         return LoginResponse.builder()
                 .id(user.getUsers_id())
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)  // 리프레시 토큰 포함
                 .build();
     }
 

@@ -36,8 +36,9 @@ public class JwtTokenProvider {
     }
 
     // Refresh Token 생성
-    public String generateRefreshToken(Date expiryDate) {
+    public String generateRefreshToken(String uid, Date expiryDate) {
         return Jwts.builder()
+                .setSubject(uid)  // 사용자 ID를 포함
                 .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
