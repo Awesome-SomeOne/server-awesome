@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 public class Users {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long users_id;
 
     private String username;  // 로그인 시 사용하는 이름
