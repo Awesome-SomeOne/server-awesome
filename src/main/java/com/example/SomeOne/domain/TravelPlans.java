@@ -15,13 +15,13 @@ import java.util.List;
 @NoArgsConstructor
 public class TravelPlans {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planId;
 
-    @OneToMany(mappedBy = "travelPlans", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "travelPlans", cascade = CascadeType.ALL)
     private List<TravelPlace> travelPlaces = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id")
     private Users user;
     private String plan_name;
@@ -29,7 +29,7 @@ public class TravelPlans {
     private LocalDate endDate;
     private TravelStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "island_id")
     private Island island;
 

@@ -14,5 +14,6 @@ public class FindBusinessesResponse {
     private String address;
     private String x_address;
     private String y_address;
+    private String imgUrl;
     private Business_category category;
 }
