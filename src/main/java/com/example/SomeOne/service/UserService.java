@@ -1,6 +1,7 @@
 package com.example.SomeOne.service;
 
 import com.example.SomeOne.domain.Users;
+import com.example.SomeOne.config.auth.JwtTokenProvider;
 import com.example.SomeOne.dto.Login.Request.SocialLoginRequest;
 import com.example.SomeOne.dto.Login.Response.LoginResponse;
 import com.example.SomeOne.dto.Login.Response.SocialAuthResponse;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -34,6 +36,7 @@ public class UserService {
     private final List<SocialLoginService> loginServices;
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public LoginResponse doSocialLogin(SocialLoginRequest request) {
         // 적절한 SocialLoginService 가져오기
@@ -53,9 +56,13 @@ public class UserService {
                         .userType(request.getUserType())
                         .build()));
 
+        // JWT 생성
+        String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
+
         // 로그인 응답 생성
         return LoginResponse.builder()
                 .id(user.getUsers_id())
+                .accessToken(accessToken)
                 .build();
     }
 
