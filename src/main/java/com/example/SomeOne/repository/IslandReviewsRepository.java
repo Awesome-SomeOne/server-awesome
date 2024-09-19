@@ -10,4 +10,5 @@ import java.util.Optional;
 
 public interface IslandReviewsRepository extends JpaRepository<IslandReviews, Long> {
     Optional<IslandReviews> findFirstByIslandAndUser(Island island, Users user);
+    void deleteByTravelRecord_RecordId(Long travelRecordId);
 }

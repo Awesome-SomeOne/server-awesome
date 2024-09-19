@@ -29,16 +29,16 @@ public class TravelRecords {
     private String recordContent;
     private Boolean publicPrivate;
 
-    @OneToMany(mappedBy = "record", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "record")
     private List<RecordImages> recordImages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "travelRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "travelRecord")
     private List<Report> reports = new ArrayList<>();
 
     private Boolean isReported = false; // 신고 상태
 
 
-    @OneToMany(mappedBy = "travelRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "travelRecord")
     private List<BusinessReviews> businessReviews = new ArrayList<>();
 
 

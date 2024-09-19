@@ -63,7 +63,7 @@ public class TravelController {
     }
 
     @GetMapping("/plans")
-    public ResponseEntity<List<GetPlansResponse>> getPlans(@RequestBody Long userId) {
+    public ResponseEntity<List<GetPlansResponse>> getPlans(@RequestParam Long userId) {
         List<GetPlansResponse> response = travelPlansService.getPlan(userId);
         return ResponseEntity.ok(response);
     }
@@ -92,7 +92,7 @@ public class TravelController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/update/date")
+    @PostMapping("/update/date")
     public ResponseEntity<Void> updateDate(@RequestBody UpdateDateRequest request) {
         travelPlaceService.updateDate(request.getTravelPlaceId(), request.getTravelPlanId(), request.getBusinessId(), request.getDate());
         return ResponseEntity.ok().build();

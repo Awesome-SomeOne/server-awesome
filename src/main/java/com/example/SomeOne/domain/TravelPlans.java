@@ -18,7 +18,7 @@ public class TravelPlans {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planId;
 
-    @OneToMany(mappedBy = "travelPlans", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "travelPlans")
     private List<TravelPlace> travelPlaces = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
