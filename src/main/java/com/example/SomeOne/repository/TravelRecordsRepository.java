@@ -3,7 +3,9 @@ package com.example.SomeOne.repository;
 import com.example.SomeOne.domain.TravelPlans;
 import com.example.SomeOne.domain.TravelRecords;
 import com.example.SomeOne.domain.Users;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,5 +23,11 @@ public interface TravelRecordsRepository extends JpaRepository<TravelRecords, Lo
 
     List<TravelRecords> findByPlanAndPublicPrivateOrderByRecordIdDesc(TravelPlans plan, Boolean publicPrivate);
 
+    @Query("SELECT tr FROM TravelRecords tr WHERE tr.plan.planId = :planId")
+    List<TravelRecords> findByPlanId(@Param("planId") Long planId);
 
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM TravelRecords tr WHERE tr.plan.planId = :planId")
+    void deleteByPlanId(@Param("planId") Long planId);
 }

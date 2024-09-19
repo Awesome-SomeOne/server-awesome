@@ -7,7 +7,9 @@ import com.example.SomeOne.dto.TravelPlans.response.GetPlansResponse;
 import com.example.SomeOne.dto.TravelPlans.response.SaveTravelResponse;
 import com.example.SomeOne.dto.TravelPlans.response.TravelPlaceResponse;
 import com.example.SomeOne.dto.weather.WeatherNowDTO;
+import com.example.SomeOne.repository.IslandReviewsRepository;
 import com.example.SomeOne.repository.TravelPlansRepository;
+import com.example.SomeOne.repository.TravelRecordsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -50,7 +52,9 @@ public class TravelPlansService {
 
     @Transactional
     public void delete(Long planId) {
-        TravelPlans plan = travelPlansRepository.findById(planId).orElseThrow(() -> new IllegalArgumentException());
+
+        TravelPlans plan = travelPlansRepository.findById(planId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid plan ID: " + planId));
         travelPlansRepository.delete(plan);
     }
 
