@@ -26,7 +26,7 @@ public class BusinessesService {
 
         return businessesList.stream()
                 .map(business -> new FindBusinessesResponse(business.getBusiness_id(), business.getBusiness_name(),
-                        business.getAddress(), business.getX_address(), business.getY_address(),
+                        business.getAddress(), business.getX_address(), business.getY_address(), business.getImg_url(),
                         business.getBusinessType())).collect(Collectors.toList());
     }
 
@@ -48,10 +48,12 @@ public class BusinessesService {
         List<Businesses> businessesList = businessesRepository.findByIslandId(id);
         Collections.shuffle(businessesList);
 
-        List<Businesses> fiveList = businessesList.stream().limit(5).collect(Collectors.toList());
+        List<Businesses> resultList = businessesList.stream()
+                .limit(Math.min(5, businessesList.size()))
+                .collect(Collectors.toList());
 
-        return fiveList.stream().map(b -> new FamousPlaceResponse(b.getBusiness_id(), b.getBusiness_name(), b.getBusinessType(),
-                b.getAddress(), b.getX_address(), b.getY_address(),
+        return resultList.stream().map(b -> new FamousPlaceResponse(b.getBusiness_id(), b.getBusiness_name(),
+                b.getBusinessType(), b.getAddress(), b.getX_address(), b.getY_address(),
                 b.getImg_url())).collect(Collectors.toList());
     }
 }

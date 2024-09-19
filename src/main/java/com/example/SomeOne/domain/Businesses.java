@@ -14,6 +14,7 @@ public class Businesses {
     private Long business_id;
 
     private String business_name;
+    @Enumerated(EnumType.STRING)
     private Business_category businessType; // 식당, 숙박, 관광지, 액티비티
     private String address;
     private String x_address;

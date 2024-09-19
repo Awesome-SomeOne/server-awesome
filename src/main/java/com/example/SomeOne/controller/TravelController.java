@@ -98,13 +98,13 @@ public class TravelController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/change/order")
+    @PostMapping("/change/order")
     public ResponseEntity<Void> changeOrder(@RequestBody ChangeOrderRequest request) {
         travelPlaceService.changeOrder(request.getTravelPlaceId(), request.getOrder());
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/update/place")
+    @PostMapping("/update/place")
     public ResponseEntity<Void> updatePlace(@RequestBody List<UpdatePlaceRequest> request) {
         travelPlaceService.updatePlace(request);
         return ResponseEntity.ok().build();
