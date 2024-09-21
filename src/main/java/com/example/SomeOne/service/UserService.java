@@ -11,15 +11,18 @@ import com.example.SomeOne.dto.Login.Request.UserJoinRequest;
 import com.example.SomeOne.dto.Login.Response.UserJoinResponse;
 import com.example.SomeOne.domain.enums.UserType;
 import com.example.SomeOne.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
@@ -41,14 +44,14 @@ public class UserService {
     public LoginResponse doSocialLogin(SocialLoginRequest request) {
         SocialLoginService loginService = this.getLoginService(request.getUserType());
 
-        // Access Token과 사용자 정보 가져오기
+        // 카카오 액세스 토큰과 사용자 정보 가져오기
         SocialAuthResponse socialAuthResponse = loginService.getAccessToken(request.getCode());
         SocialUserResponse socialUserResponse = loginService.getUserInfo(socialAuthResponse.getAccess_token());
 
         // 사용자 조회 및 없는 경우 새 사용자 등록
-        Users user = userRepository.findByUserId(socialUserResponse.getId())
+        Users user = userRepository.findByKakaoUserId(socialUserResponse.getId()) // 카카오 사용자 ID로 조회
                 .orElseGet(() -> this.joinUser(UserJoinRequest.builder()
-                        .userId(socialUserResponse.getId())
+                        .kakaoUserId(socialUserResponse.getId()) // 카카오 사용자 ID 저장
                         .userEmail(socialUserResponse.getEmail())
                         .userName(socialUserResponse.getName())
                         .userType(request.getUserType())
@@ -62,11 +65,11 @@ public class UserService {
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        // 로그인 응답 생성
+        /// JWT 액세스 토큰과 리프레시 토큰 반환
         return LoginResponse.builder()
                 .id(user.getUsers_id())
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)  // 리프레시 토큰 포함
+                .accessToken(accessToken)  // JWT 액세스 토큰
+                .refreshToken(refreshToken) // JWT 리프레시 토큰
                 .build();
     }
 
@@ -74,6 +77,7 @@ public class UserService {
     private Users joinUser(UserJoinRequest userJoinRequest) {
         Users user = Users.builder()
                 .userType(userJoinRequest.getUserType())
+                .kakaoUserId(userJoinRequest.getKakaoUserId()) // kakaoUserId 설정
                 .username(userJoinRequest.getUserName())  // username 설정
                 .phone_number(userJoinRequest.getUserEmail())  // 이메일 설정 (phone_number로 대체한 경우)
                 .nickname(userJoinRequest.getUserName())  // nickname 설정
@@ -114,37 +118,49 @@ public class UserService {
         String logoutUrl = "https://someone.com/logout";
     }
 
+    // 엑세스 토큰에서 사용자 가져오기
     public Long findUserIdByAccessToken(String accessToken) {
-        // 1. Access Token을 사용해 카카오 API로 사용자 정보 요청
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+        headers.setBearerAuth(accessToken.trim());
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         try {
-            // 2. 카카오 API로 사용자 정보 조회
-            ResponseEntity<String> response = restTemplate.postForEntity(userInfoUrl, entity, String.class);
+            // Kakao API 호출
+            ResponseEntity<String> response = restTemplate.exchange(userInfoUrl, HttpMethod.GET, entity, String.class);
+
             if (response.getStatusCode().is2xxSuccessful()) {
-                // 3. 사용자 정보에서 고유 ID 추출 (JSON Parsing 필요)
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode root = objectMapper.readTree(response.getBody());
+
+                // 사용자 ID 가져오기
                 Long kakaoUserId = root.path("id").asLong();
+                log.info("Successfully retrieved Kakao user ID: {}", kakaoUserId);
 
-                // 4. 로컬 데이터베이스에서 해당 카카오 사용자 ID로 사용자 조회
-                Users user = userRepository.findByUserId(String.valueOf(kakaoUserId))
-                        .orElseThrow(() -> new NoSuchElementException("해당 사용자를 찾을 수 없습니다."));
+                // 사용자 정보를 로컬 DB에서 조회 (findByKakaoUserId 메서드를 사용)
+                return userRepository.findByKakaoUserId(String.valueOf(kakaoUserId))  // 이 부분이 중요한 수정입니다.
+                        .map(Users::getUsers_id)
+                        .orElseThrow(() -> new NoSuchElementException("User not found for Kakao ID: " + kakaoUserId));
 
-                return user.getUsers_id();  // 로컬 데이터베이스의 사용자 ID 반환
+            } else {
+                log.error("Kakao API error, status code: {}, response body: {}", response.getStatusCode(), response.getBody());
+                throw new RuntimeException("Kakao API call failed: Non-2xx status code");
             }
+        } catch (HttpClientErrorException e) {
+            // 카카오 API 호출 오류 처리
+            log.error("Failed to retrieve user info with access token - HTTP error: {}, response body: {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new RuntimeException("Kakao API call failed: " + e.getMessage(), e);
+        } catch (JsonProcessingException e) {
+            // JSON 처리 오류 처리
+            log.error("Failed to process the response body as JSON", e);
+            throw new RuntimeException("Failed to process the response body as JSON", e);
         } catch (Exception e) {
-            log.error("Access Token을 사용한 사용자 정보 조회 실패", e);
-            throw new RuntimeException("사용자 조회 실패");
+            // 그 외의 예외 처리
+            log.error("Unexpected error occurred while retrieving user info", e);
+            throw new RuntimeException("Failed to retrieve user info", e);
         }
-
-        throw new RuntimeException("Access Token을 통해 사용자 정보를 가져올 수 없습니다.");
     }
-
 
     // 카카오 사용자 탈퇴 처리
     public void unlinkKakaoUser(String accessToken) {
@@ -170,8 +186,8 @@ public class UserService {
         }
     }
 
+    // 리프레시 토큰 갱신 로직
     public LoginResponse refreshToken(String refreshToken) {
-        // 리프레시 토큰 검증
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw new IllegalArgumentException("Invalid Refresh Token");
         }
@@ -194,6 +210,77 @@ public class UserService {
                 .build();
     }
 
+    // 리프레시 토큰 반환
+    public String getRefreshToken(String accessToken) {
+        if (!jwtTokenProvider.validateToken(accessToken)) {
+            log.error("Invalid access token: {}", accessToken);
+            throw new IllegalArgumentException("Invalid access token");
+        }
+
+        try {
+            // 액세스 토큰에서 사용자 ID 추출
+            Long userId = findUserIdByAccessToken(accessToken);
+
+            // 사용자 정보 조회
+            Users user = userRepository.findById(userId)
+                    .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+            // 리프레시 토큰 반환
+            return user.getRefreshToken();
+        } catch (Exception e) {
+            log.error("Failed to retrieve refresh token for user with access token: {}", accessToken, e);
+            throw new RuntimeException("Failed to retrieve refresh token", e);
+        }
+    }
+
+    // 카카오 사용자 ID로 유저를 찾거나 새로 생성하는 메서드
+    public Users findOrCreateUserByKakaoId(Long kakaoUserId, SocialUserResponse socialUserResponse) {
+        Optional<Users> existingUser = userRepository.findByKakaoUserId(String.valueOf(kakaoUserId));
+        if (existingUser.isPresent()) {
+            log.info("User found for Kakao ID: {}", kakaoUserId);
+            return existingUser.get();
+        }
+
+        // 사용자가 없으면 새로 생성
+        log.info("No user found for Kakao ID: {}, creating a new user", kakaoUserId);
+        Users newUser = Users.builder()
+                .kakaoUserId(String.valueOf(kakaoUserId)) // 카카오 사용자 ID 저장
+                .username(socialUserResponse.getName() != null ? socialUserResponse.getName() : "kakao_user_" + kakaoUserId) // 적절한 기본 사용자 이름 생성
+                .userType(UserType.KAKAO) // 사용자 타입을 KAKAO로 설정
+                .build();
+
+        return userRepository.save(newUser); // 새로운 유저 저장 및 반환
+    }
+
+    public SocialUserResponse getUserInfoFromKakaoAccessToken(String accessToken) {
+        String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(userInfoUrl, HttpMethod.GET, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode root = objectMapper.readTree(response.getBody());
+
+                // 카카오 사용자 정보를 JSON에서 추출
+                Long kakaoUserId = root.path("id").asLong();
+                String email = root.path("kakao_account").path("email").asText();
+                String name = root.path("properties").path("nickname").asText();
+
+                return new SocialUserResponse(kakaoUserId, email, name);
+            } else {
+                log.error("Kakao API error: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to retrieve user info from Kakao API");
+            }
+        } catch (Exception e) {
+            log.error("Failed to retrieve user info from Kakao API", e);
+            throw new RuntimeException("Failed to retrieve user info from Kakao API", e);
+        }
+    }
 }
 
 

@@ -16,6 +16,9 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     // userId로 사용자 검색
     Optional<Users> findByUserId(String users_id);
 
+    // 카카오 사용자 ID로 조회
+    Optional<Users> findByKakaoUserId(String kakaoUserId);
+
     // 소셜 로그인 여부로 사용자 검색
     //Optional<Users> findBySocialLogin(Boolean socialLogin);
 }
