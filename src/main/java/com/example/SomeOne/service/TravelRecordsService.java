@@ -67,7 +67,7 @@ public class TravelRecordsService {
                 savedRecord.getRecordId(),
                 request.getOneLineReview(),
                 request.getOverallReview(),
-                imageUrls.isEmpty() ? null : imageUrls.get(0),
+                imageUrls,  // 리스트로 변경
                 request.isPublicPrivate(),
                 request.getPlanId(),
                 user.getUsers_id(),
@@ -143,7 +143,7 @@ public class TravelRecordsService {
                 record.getRecordId(),
                 record.getRecordTitle(),
                 record.getRecordContent(),
-                imageUrls.isEmpty() ? null : imageUrls.get(0),
+                imageUrls,
                 record.getPublicPrivate(),
                 record.getPlan().getPlanId(),
                 record.getUser().getUsers_id(),
@@ -203,7 +203,7 @@ public class TravelRecordsService {
                 record.getRecordId(),
                 record.getRecordTitle(),
                 record.getRecordContent(),
-                imageUrls.isEmpty() ? null : imageUrls.get(0),
+                imageUrls,
                 record.getPublicPrivate(),
                 record.getPlan().getPlanId(),
                 record.getUser().getUsers_id(),
@@ -226,7 +226,10 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImageUrl(),
+                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
+                                    .stream()
+                                    .map(RecordImages::getImageUrl)
+                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
@@ -251,7 +254,10 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImageUrl(),
+                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
+                                    .stream()
+                                    .map(RecordImages::getImageUrl)
+                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
@@ -276,7 +282,10 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImageUrl(),
+                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
+                                    .stream()
+                                    .map(RecordImages::getImageUrl)
+                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
@@ -301,7 +310,10 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages().get(0).getImageUrl(),
+                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
+                                    .stream()
+                                    .map(RecordImages::getImageUrl)
+                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
