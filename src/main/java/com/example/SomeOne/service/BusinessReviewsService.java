@@ -56,12 +56,12 @@ public class BusinessReviewsService {
     }
 
     @Transactional
-    public BusinessReviewResponse createOrUpdateBusinessReview(CreateBusinessReviewRequest request, List<MultipartFile> images) {
+    public BusinessReviewResponse createOrUpdateBusinessReview(Long userId, CreateBusinessReviewRequest request, List<MultipartFile> images) {
         Businesses business = businessRepository.findById(request.getBusinessId())
                 .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + request.getBusinessId()));
 
-        Users user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         BusinessReviews review = businessReviewsRepository.findByBusinessAndUser(business, user)
                 .map(existingReview -> {
@@ -113,5 +113,26 @@ public class BusinessReviewsService {
         businessReviewImagesRepository.deleteAll(reviewImages);
 
         businessReviewsRepository.delete(review);
+    }
+
+    public List<BusinessReviewResponse> getAllBusinessReviews(Long userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        List<BusinessReviews> reviews = businessReviewsRepository.findByUser(user);
+
+        return reviews.stream()
+                .map(review -> new BusinessReviewResponse(
+                        review.getReviewId(),
+                        review.getBusiness().getBusiness_id(),
+                        review.getUser().getUsers_id(),
+                        review.getRating(),
+                        review.getBusinessReview(),
+                        businessReviewImagesRepository.findByReview(review)
+                                .stream()
+                                .map(BusinessReviewImages::getImageUrl)
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
     }
 }

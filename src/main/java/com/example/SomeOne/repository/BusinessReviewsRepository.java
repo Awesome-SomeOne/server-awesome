@@ -12,11 +12,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BusinessReviewsRepository extends JpaRepository<BusinessReviews, Long> {
-//    Optional<BusinessReviews> findByBusinessAndUser(Businesses business, Users user);
-//    void deleteByBusinessAndUser(Businesses business, Users user);
+
     Optional<BusinessReviews> findByBusinessAndUser(Businesses business, Users user);
     void deleteByTravelRecord(TravelRecords travelRecord);
+
     Optional<BusinessReviews> findFirstByBusinessAndUser(Businesses business, Users user);
     @Query("SELECT r FROM BusinessReviews r WHERE r.business.business_id = :businessId")
     List<BusinessReviews> findAllByBusinessId(@Param("businessId") Long businessId);
+
+    List<BusinessReviews> findByUser(Users user);
 }
