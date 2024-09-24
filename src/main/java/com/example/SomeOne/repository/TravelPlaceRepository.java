@@ -13,7 +13,8 @@ import java.util.List;
 public interface TravelPlaceRepository extends JpaRepository<TravelPlace, Long> {
     List<TravelPlace> findAllByTravelPlans_PlanIdAndDate(Long planId, LocalDate date);
     List<TravelPlace> findAllByTravelPlans_PlanIdAndDateOrderByPlaceOrderAsc(Long placeId, LocalDate date);
-    List<TravelPlace> findAllByTravelPlans_PlanIdOrderByDateAsc(Long placeId);
+    @Query("SELECT tp FROM TravelPlace tp WHERE tp.travelPlans.planId = :planId AND tp.travelPlans.user = :user ORDER BY tp.date ASC")
+    List<TravelPlace> findAllByTravelPlans_PlanIdAndUserOrderByDateAsc(@Param("planId") Long planId, @Param("user") Users user);
     List<TravelPlace> findByTravelPlans_User(Users user);
 
     @Query("SELECT tp FROM TravelPlace tp " +

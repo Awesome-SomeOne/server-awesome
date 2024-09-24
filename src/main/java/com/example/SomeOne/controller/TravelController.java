@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.example.SomeOne.config.SecurityUtil.getAuthenticatedUserId;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/travel")
@@ -33,7 +35,8 @@ public class TravelController {
 
     @PostMapping("/save")
     public ResponseEntity<SaveTravelResponse> savePlan(@RequestBody TravelPlanRequest request) {
-        SaveTravelResponse response = travelPlansService.save(request);
+        Long userId = getAuthenticatedUserId();
+        SaveTravelResponse response = travelPlansService.save(userId, request);
         return ResponseEntity.ok(response);
     }
 
@@ -63,56 +66,66 @@ public class TravelController {
     }
 
     @GetMapping("/plans")
-    public ResponseEntity<List<GetPlansResponse>> getPlans(@RequestParam Long userId) {
+    public ResponseEntity<List<GetPlansResponse>> getPlans() {
+        Long userId = getAuthenticatedUserId();
         List<GetPlansResponse> response = travelPlansService.getPlan(userId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/plan")
     public ResponseEntity<GetTravelPlanResponse> getPlan(@RequestParam("planId") Long planId) {
-        GetTravelPlanResponse response = travelPlansService.findTravelPlan(planId);
+        Long userId = getAuthenticatedUserId();
+        GetTravelPlanResponse response = travelPlansService.findTravelPlan(userId, planId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/addPlace")
     public ResponseEntity<Void> addPlace(@RequestBody AddPlaceRequest request) {
-        travelPlaceService.addPlace(request.getTravelPlanId(), request.getBusinessId(), request.getDate());
+        Long userId = getAuthenticatedUserId();
+        travelPlaceService.addPlace(userId, request.getTravelPlanId(), request.getBusinessId(), request.getDate());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/addManyPlace")
     public ResponseEntity<Void> addManyPlace(@RequestBody AddManyPlaceRequest request) {
-        travelPlaceService.addManyPlaces(request.getTravelPlanId(), request.getBusinessIds(), request.getDate());
+        Long userId = getAuthenticatedUserId();
+        travelPlaceService.addManyPlaces(userId, request.getTravelPlanId(), request.getBusinessIds(), request.getDate());
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/deletePlace")
     public ResponseEntity<Void> deletePlace(@RequestBody DeletePlaceRequest request) {
-        travelPlaceService.deletePlace(request.getTravelPlaceId());
+        Long userId = getAuthenticatedUserId();
+        travelPlaceService.deletePlace(userId, request.getTravelPlaceId());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/update/date")
     public ResponseEntity<Void> updateDate(@RequestBody UpdateDateRequest request) {
-        travelPlaceService.updateDate(request.getTravelPlaceId(), request.getTravelPlanId(), request.getBusinessId(), request.getDate());
+        Long userId = getAuthenticatedUserId();
+        travelPlaceService.updateDate(userId, request.getTravelPlaceId(), request.getTravelPlanId(),
+                request.getBusinessId(), request.getDate());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/change/order")
     public ResponseEntity<Void> changeOrder(@RequestBody ChangeOrderRequest request) {
-        travelPlaceService.changeOrder(request.getTravelPlaceId(), request.getOrder());
+        Long userId = getAuthenticatedUserId();
+        travelPlaceService.changeOrder(userId, request.getTravelPlaceId(), request.getOrder());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/update/place")
     public ResponseEntity<Void> updatePlace(@RequestBody List<UpdatePlaceRequest> request) {
-        travelPlaceService.updatePlace(request);
+        Long userId = getAuthenticatedUserId();
+        travelPlaceService.updatePlace(userId, request);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/delete/travel")
     public ResponseEntity<Void> deleteTravel(@RequestBody DeletePlanRequest request) {
-        travelPlansService.delete(request.getPlanId());
+        Long userId = getAuthenticatedUserId();
+        travelPlansService.delete(userId, request.getPlanId());
         return ResponseEntity.ok().build();
     }
 }

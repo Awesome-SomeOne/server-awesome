@@ -26,7 +26,7 @@ public class Users {
     private String nickname;  // 별명
     private String profile_image;
     private Boolean social_login;
-    private String userId;
+    private Long userId;
     private String refreshToken;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

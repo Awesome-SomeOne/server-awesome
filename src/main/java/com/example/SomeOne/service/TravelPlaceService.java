@@ -3,6 +3,7 @@ package com.example.SomeOne.service;
 import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.TravelPlace;
 import com.example.SomeOne.domain.TravelPlans;
+import com.example.SomeOne.domain.Users;
 import com.example.SomeOne.dto.TravelPlans.request.UpdatePlaceRequest;
 import com.example.SomeOne.repository.TravelPlaceRepository;
 import com.example.SomeOne.repository.TravelPlansRepository;
@@ -22,9 +23,10 @@ public class TravelPlaceService {
     private final TravelPlaceRepository travelPlaceRepository;
     private final TravelPlansRepository travelPlansRepository;
     private final BusinessesService businessesService;
+    private final UserService userService;
 
     @Transactional
-    public void addPlace(Long travelPlanId, Long businessId, LocalDate date) {
+    public void addPlace(Long userId, Long travelPlanId, Long businessId, LocalDate date) {
         TravelPlans travelPlan = travelPlansRepository.findById(travelPlanId).orElseThrow(
                 () -> new IllegalArgumentException());
         Businesses business = businessesService.findById(businessId);
@@ -39,16 +41,21 @@ public class TravelPlaceService {
     }
 
     @Transactional
-    public void addManyPlaces(Long travelPlanId, List<Long> businessIds, LocalDate date) {
+    public void addManyPlaces(Long userId, Long travelPlanId, List<Long> businessIds, LocalDate date) {
         for (Long businessId : businessIds) {
-            addPlace(travelPlanId, businessId, date);
+            addPlace(userId, travelPlanId, businessId, date);
         }
     }
 
     @Transactional
-    public void deletePlace(Long travelPlaceId) {
+    public void deletePlace(Long userId, Long travelPlaceId) {
         TravelPlace travelPlace = findById(travelPlaceId);
         Long travelPlanId = travelPlace.getTravelPlans().getPlanId();
+
+        Long planUser = travelPlace.getTravelPlans().getUser().getUsers_id();
+        if (planUser != userId) {
+            throw new IllegalArgumentException("Wrong user");
+        }
 
         LocalDate date = travelPlace.getDate();
         List<TravelPlace> placeList = travelPlaceRepository.
@@ -66,7 +73,7 @@ public class TravelPlaceService {
     }
 
     @Transactional
-    public void updatePlace(List<UpdatePlaceRequest> request) {
+    public void updatePlace(Long userId, List<UpdatePlaceRequest> request) {
         for (int i = 0; i < request.size(); i++) {
             Long travelPlaceId = request.get(i).getTravelPlaceId();
             TravelPlace travelPlace = findById(travelPlaceId);
@@ -75,13 +82,13 @@ public class TravelPlaceService {
     }
 
     @Transactional
-    public void updateDate(Long travelPlaceId, Long travelPlanId, Long businessId, LocalDate date) {
-        deletePlace(travelPlaceId);
-        addPlace(travelPlanId, businessId, date);
+    public void updateDate(Long userId, Long travelPlaceId, Long travelPlanId, Long businessId, LocalDate date) {
+        deletePlace(userId, travelPlaceId);
+        addPlace(userId, travelPlanId, businessId, date);
     }
 
     @Transactional
-    public void changeOrder(Long travelPlaceId, Integer changeOrder) {
+    public void changeOrder(Long userId, Long travelPlaceId, Integer changeOrder) {
         TravelPlace travelPlace = findById(travelPlaceId);
         Long travelPlanId = travelPlace.getTravelPlans().getPlanId();
 
@@ -115,7 +122,8 @@ public class TravelPlaceService {
         return travelPlaceRepository.findById(travelPlaceId).orElseThrow(() -> new IllegalArgumentException());
     }
 
-    public List<TravelPlace> findByTravelPlan(Long planId) {
-        return travelPlaceRepository.findAllByTravelPlans_PlanIdOrderByDateAsc(planId);
+    public List<TravelPlace> findByTravelPlan(Long userId, Long planId) {
+        Users user = userService.findById(userId);
+        return travelPlaceRepository.findAllByTravelPlans_PlanIdAndUserOrderByDateAsc(planId, user);
     }
 }

@@ -24,7 +24,7 @@ public class IslandService {
 
         return islandList.stream()
                 .map(island -> new FindIslandResponse(island.getId(), island.getName(),
-                        island.getAddress())).collect(Collectors.toList());
+                        island.getAddress(), island.getImg_url())).collect(Collectors.toList());
     }
 
     public Island findById(Long id) {
@@ -36,6 +36,6 @@ public class IslandService {
         Collections.shuffle(islands);
 
         Island island = islands.get(0);
-        return new RandomIslandResponse(island.getId(), island.getName(), island.getAddress());
+        return new RandomIslandResponse(island.getId(), island.getName(), island.getAddress(), island.getImg_url());
     }
 }
