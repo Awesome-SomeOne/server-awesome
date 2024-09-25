@@ -15,5 +15,6 @@ public class GetTravelPlanResponse {
     private String islandName;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Double temperature;
     private List<TravelPlaceResponse> travelPlaceList;
 }

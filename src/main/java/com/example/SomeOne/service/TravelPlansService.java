@@ -76,13 +76,10 @@ public class TravelPlansService {
         LocalDate startDate = travelPlans.getStartDate();
         LocalDate endDate = travelPlans.getEndDate();
 
+        WeatherNowDTO currentWeather = weatherService.getWeather(travelPlans.getIsland().getId());
+        Double temperature = currentWeather.getTemperature();
+
         List<TravelPlaceResponse> responseList = travelPlaceList.stream().map(p -> {
-
-            int xCoordinate = CoordinateParser.parseCoordinate(p.getBusinesses().getX_address());
-            int yCoordinate = CoordinateParser.parseCoordinate(p.getBusinesses().getY_address());
-
-            WeatherNowDTO currentWeather = weatherService.getCurrentWeather(xCoordinate, yCoordinate);
-
             return new TravelPlaceResponse(
                     p.getPlace_id(),
                     p.getBusinesses().getBusiness_name(),
@@ -92,12 +89,11 @@ public class TravelPlansService {
                     p.getBusinesses().getBusinessType(),
                     p.getDate(),
                     p.getPlaceOrder(),
-                    p.getBusinesses().getImg_url(),
-                    currentWeather.getTemperature()
+                    p.getBusinesses().getImg_url()
             );
         }).collect(Collectors.toList());
 
-        return new GetTravelPlanResponse(planName, islandName, startDate, endDate, responseList);
+        return new GetTravelPlanResponse(planName, islandName, startDate, endDate, temperature, responseList);
     }
 
     public class CoordinateParser {
