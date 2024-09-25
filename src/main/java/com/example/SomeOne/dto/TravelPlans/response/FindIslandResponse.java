@@ -11,4 +11,5 @@ public class FindIslandResponse {
     private Long id;
     private String name;
     private String address;
+    private String img_url;
 }

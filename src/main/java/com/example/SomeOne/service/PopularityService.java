@@ -68,9 +68,11 @@ public class PopularityService {
     }
 
     @Transactional
-    public GetLandmarkResponse getPlace(Long businessId) {
+    public GetLandmarkResponse getPlace(Long userId, Long businessId) {
         Businesses businesses = businessesRepository.findById(businessId).orElseThrow(() -> new IllegalArgumentException());
         List<BusinessReviews> reviews = businessReviewsRepository.findAllByBusinessId(businessId);
+
+        boolean status = favoritesService.findFavorite(userId, businessId);
 
         List<ReviewResponse> reviewResponses = reviews.stream()
                 .map(review -> new ReviewResponse(
@@ -88,6 +90,7 @@ public class PopularityService {
                 businesses.getX_address(),
                 businesses.getY_address(),
                 businesses.getImg_url(),
+                status,
                 reviewResponses
         );
     }

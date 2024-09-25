@@ -11,4 +11,5 @@ public class RandomIslandResponse {
     private Long id;
     private String islandName;
     private String address;
+    private String img_url;
 }

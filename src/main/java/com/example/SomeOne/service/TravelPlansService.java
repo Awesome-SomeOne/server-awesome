@@ -31,10 +31,12 @@ public class TravelPlansService {
     private final WeatherService weatherService;
 
     @Transactional
-    public SaveTravelResponse save(TravelPlanRequest request) {
+    public SaveTravelResponse save(Long userId, TravelPlanRequest request) {
         Island island = islandService.findById(request.getIslandId());
 
-        TravelPlans travelPlan = new TravelPlans(new Users(), request.getPlanName(), request.getStartDate(),
+        Users user = userService.findById(userId);
+
+        TravelPlans travelPlan = new TravelPlans(user, request.getPlanName(), request.getStartDate(),
                 request.getEndDate(), island);
 
         travelPlansRepository.save(travelPlan);
@@ -51,10 +53,14 @@ public class TravelPlansService {
     }
 
     @Transactional
-    public void delete(Long planId) {
-
+    public void delete(Long userId, Long planId) {
         TravelPlans plan = travelPlansRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid plan ID: " + planId));
+
+        if (plan.getUser().getUsers_id() != userId) {
+            throw new IllegalArgumentException("Wrong user");
+        }
+
         travelPlansRepository.delete(plan);
     }
 
@@ -62,21 +68,18 @@ public class TravelPlansService {
         return travelPlansRepository.findById(id).orElseThrow(() -> new IllegalArgumentException());
     }
 
-    public GetTravelPlanResponse findTravelPlan(Long planId) {
+    public GetTravelPlanResponse findTravelPlan(Long userId, Long planId) {
         TravelPlans travelPlans = findById(planId);
         String planName = travelPlans.getPlan_name();
         String islandName = travelPlans.getIsland().getName();
-        List<TravelPlace> travelPlaceList = travelPlaceService.findByTravelPlan(planId);
+        List<TravelPlace> travelPlaceList = travelPlaceService.findByTravelPlan(userId, planId);
         LocalDate startDate = travelPlans.getStartDate();
         LocalDate endDate = travelPlans.getEndDate();
 
+        WeatherNowDTO currentWeather = weatherService.getWeather(travelPlans.getIsland().getId());
+        Double temperature = currentWeather.getTemperature();
+
         List<TravelPlaceResponse> responseList = travelPlaceList.stream().map(p -> {
-
-            int xCoordinate = CoordinateParser.parseCoordinate(p.getBusinesses().getX_address());
-            int yCoordinate = CoordinateParser.parseCoordinate(p.getBusinesses().getY_address());
-
-            WeatherNowDTO currentWeather = weatherService.getCurrentWeather(xCoordinate, yCoordinate);
-
             return new TravelPlaceResponse(
                     p.getPlace_id(),
                     p.getBusinesses().getBusiness_name(),
@@ -86,12 +89,11 @@ public class TravelPlansService {
                     p.getBusinesses().getBusinessType(),
                     p.getDate(),
                     p.getPlaceOrder(),
-                    p.getBusinesses().getImg_url(),
-                    currentWeather.getTemperature()
+                    p.getBusinesses().getImg_url()
             );
         }).collect(Collectors.toList());
 
-        return new GetTravelPlanResponse(planName, islandName, startDate, endDate, responseList);
+        return new GetTravelPlanResponse(planName, islandName, startDate, endDate, temperature, responseList);
     }
 
     public class CoordinateParser {

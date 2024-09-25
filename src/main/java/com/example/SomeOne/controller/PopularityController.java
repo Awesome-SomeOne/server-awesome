@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.example.SomeOne.config.SecurityUtil.getAuthenticatedUserId;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/popularity")
@@ -22,29 +24,31 @@ public class PopularityController {
     private final FavoritesService favoritesService;
 
     @GetMapping("/landmark/list") // 인기관광지 둘러보기
-    public ResponseEntity<List<PopularityPlaceResponse>> landmarkList(@RequestParam("userId") Long userId,
-                                                                      @RequestParam("islandId") Long islandId) {
+    public ResponseEntity<List<PopularityPlaceResponse>> landmarkList(@RequestParam("islandId") Long islandId) {
+        Long userId = getAuthenticatedUserId();
         List<PopularityPlaceResponse> response = popularityService.listLandmark(userId, islandId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/recommend/place") // 추천장소 리스트
-    public ResponseEntity<List<PopularityPlaceResponse>> recommendPlaceList(@RequestParam("userId") Long userId,
-                                                                            @RequestParam("islandId") Long islandId,
+    public ResponseEntity<List<PopularityPlaceResponse>> recommendPlaceList(@RequestParam("islandId") Long islandId,
                                                                             @RequestParam("category") Business_category category) {
+        Long userId = getAuthenticatedUserId();
         List<PopularityPlaceResponse> response = popularityService.recommendPlaceList(userId, islandId, category);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/landmark")
     public ResponseEntity<GetLandmarkResponse> getLandmark(@RequestParam("businessId") Long businessId) {
-        GetLandmarkResponse response = popularityService.getPlace(businessId);
+        Long userId = getAuthenticatedUserId();
+        GetLandmarkResponse response = popularityService.getPlace(userId, businessId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/like")
     public ResponseEntity<LikeResponse> updateLike(@RequestBody LikeRequest request) {
-        LikeResponse response = favoritesService.updateLike(request.getUserId(), request.getBusinessId());
+        Long userId = getAuthenticatedUserId();
+        LikeResponse response = favoritesService.updateLike(userId, request.getBusinessId());
         return ResponseEntity.ok(response);
     }
 }

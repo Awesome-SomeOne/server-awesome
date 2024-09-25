@@ -20,5 +20,4 @@ public class TravelPlaceResponse {
     private LocalDate date;
     private Integer order;
     private String imgUrl;
-    private Double temperature;
 }
