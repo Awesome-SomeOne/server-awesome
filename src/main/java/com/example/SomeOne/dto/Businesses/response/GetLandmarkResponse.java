@@ -16,5 +16,6 @@ public class GetLandmarkResponse {
     private String xAddress;
     private String yAddress;
     private String imgUrl;
+    private Boolean status;
     private List<ReviewResponse> reviews;
 }
