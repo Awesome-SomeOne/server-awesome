@@ -112,8 +112,7 @@ public class KakaoLoginServiceImpl implements SocialLoginService {
 
         return SocialUserResponse.builder()
                 .id(kaKaoLoginResponse.getId())
-                .gender(kakaoLoginData.getGender())
-                .name(name)
+                .nickname(name)
                 .email(kakaoLoginData.getEmail())
                 .build();
     }
@@ -124,7 +123,7 @@ public class KakaoLoginServiceImpl implements SocialLoginService {
         Users user = userRepository.findByKakaoUserId(String.valueOf(socialUserResponse.getKakaoUserId()))
                 .orElseGet(() -> userRepository.save(Users.builder()
                         .kakaoUserId(String.valueOf(socialUserResponse.getKakaoUserId()))
-                        .username(socialUserResponse.getName() != null ? socialUserResponse.getName() : "kakao_user_" + socialUserResponse.getKakaoUserId())
+                        .username(socialUserResponse.getNickname() != null ? socialUserResponse.getNickname() : "kakao_user_" + socialUserResponse.getKakaoUserId())
                         .userType(UserType.KAKAO)
                         .build()));
 

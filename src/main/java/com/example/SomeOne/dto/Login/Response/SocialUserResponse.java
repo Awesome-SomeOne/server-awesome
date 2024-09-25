@@ -11,16 +11,14 @@ import lombok.*;
 public class SocialUserResponse {
     private String id;
     private String email;
-    private String name;
-    private String gender;
-    private String birthday;
+    private String nickname;
     private Long kakaoUserId;
 
     // 생성자 추가
-    public SocialUserResponse(Long kakaoUserId, String email, String name) {
+    public SocialUserResponse(Long kakaoUserId, String email, String nickname) {
         this.kakaoUserId = kakaoUserId;
         this.email = email;
-        this.name = name;
+        this.nickname = nickname;
     }
 
 }

@@ -107,7 +107,7 @@ public class UserController {
             Long kakaoUserId = socialUserResponse.getKakaoUserId();
 
             // 추가 매개변수가 필요할 경우, 해당 값을 준비 (예: 닉네임, 추가 정보 등)
-            String additionalParameter = socialUserResponse.getName(); // 예시로 닉네임 사용
+            String additionalParameter = socialUserResponse.getNickname(); // 예시로 닉네임 사용
 
             // 카카오 사용자 ID를 통해 유저 정보를 찾거나 새로 생성
             Users user = userService.findOrCreateUserByKakaoId(kakaoUserId, socialUserResponse, additionalParameter);

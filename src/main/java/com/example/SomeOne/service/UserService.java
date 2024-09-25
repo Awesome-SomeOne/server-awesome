@@ -37,7 +37,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final Map<String, String> cachedAccessTokens = new ConcurrentHashMap<>(); // 인가 코드로 액세스 토큰 캐싱
 
-    // 인가 코드로 카카오 액세스 토큰 발급
+    // 인가 코드로 카카오 액세스 토큰 발급 및 사용자 정보 저장
     public synchronized String getAccessTokenFromKakao(String code) {
         // 캐싱된 액세스 토큰이 있는지 확인
         if (cachedAccessTokens.containsKey(code)) {
@@ -52,10 +52,17 @@ public class UserService {
             SocialAuthResponse socialAuthResponse = loginService.getAccessToken(code);
 
             // 액세스 토큰 캐싱
-            cachedAccessTokens.put(code, socialAuthResponse.getAccess_token());
+            String accessToken = socialAuthResponse.getAccess_token();
+            cachedAccessTokens.put(code, accessToken);
             log.info("Cached access token for code: {}", code);
 
-            return socialAuthResponse.getAccess_token();
+            // 사용자 정보 가져오기
+            SocialUserResponse userInfo = getUserInfoFromKakaoAccessToken(accessToken);
+
+            // 사용자 정보가 DB에 없으면 저장
+            findOrCreateUserByKakaoId(userInfo.getKakaoUserId(), userInfo, userInfo.getNickname());
+
+            return accessToken;
         } catch (HttpClientErrorException e) {
             log.error("Error getting access token from Kakao", e);
             throw new RuntimeException("Failed to get access token from Kakao", e);
@@ -255,11 +262,12 @@ public class UserService {
             return existingUser.get();
         }
 
-        // 사용자가 없으면 새로 생성
+        // 사용자가 없으면 새 유저 생성
         log.info("No user found for Kakao ID: {}, creating a new user", kakaoUserId);
         Users newUser = Users.builder()
                 .kakaoUserId(String.valueOf(kakaoUserId)) // 카카오 사용자 ID 저장
-                .username(socialUserResponse.getName() != null ? socialUserResponse.getName() : "kakao_user_" + kakaoUserId) // 적절한 기본 사용자 이름 생성
+                .nickname(socialUserResponse.getNickname()) // 닉네임을 nickname 필드에 저장
+                .username(socialUserResponse.getEmail() != null ? socialUserResponse.getEmail() : "kakao_user_" + kakaoUserId) // 이메일이나 기본 사용자 이름 설정
                 .userType(UserType.KAKAO) // 사용자 타입을 KAKAO로 설정
                 .build();
 
