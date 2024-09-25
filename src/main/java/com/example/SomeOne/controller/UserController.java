@@ -3,22 +3,16 @@ package com.example.SomeOne.controller;
 
 import com.example.SomeOne.config.auth.JwtTokenProvider;
 import com.example.SomeOne.domain.Users;
-import com.example.SomeOne.domain.enums.UserType;
-import com.example.SomeOne.dto.Login.Request.SocialLoginRequest;
-import com.example.SomeOne.dto.Login.Response.LoginResponse;
-import com.example.SomeOne.dto.Login.Response.SocialUserResponse;
-import com.example.SomeOne.dto.Login.Response.TokenResponse;
-import com.example.SomeOne.dto.Login.Response.UserResponse;
+import com.example.SomeOne.dto.Login.Response.*;
 import com.example.SomeOne.repository.UserRepository;
 import com.example.SomeOne.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-
-import java.net.URI;
 import java.util.Date;
 import java.util.NoSuchElementException;
 
@@ -29,10 +23,24 @@ public class UserController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    @PostMapping("/social-login")
-    public ResponseEntity<LoginResponse> doSocialLogin(@RequestBody @Valid SocialLoginRequest request) {
-        return ResponseEntity.ok(userService.doSocialLogin(request));
+    @PostMapping("/get-access-token")
+    public ResponseEntity<String> getAccessToken(@RequestParam String code) {
+        // 카카오 인가 코드를 사용해 액세스 토큰 발급
+        String accessToken = userService.getAccessTokenFromKakao(code);
+        return ResponseEntity.ok(accessToken);
+    }
+
+    // 액세스 토큰을 통해 JWT 토큰 발급 API
+    @PostMapping("/issue-jwt-token")
+    public ResponseEntity<LoginResponse> issueJwtToken(
+            @RequestHeader("Authorization") String accessToken,
+            @RequestParam String nickname) {
+        // "Bearer " 접두어 제거
+        accessToken = accessToken.replace("Bearer ", "");
+        LoginResponse loginResponse = userService.issueJwtToken(accessToken, nickname);
+        return ResponseEntity.ok(loginResponse);
     }
 
     @GetMapping("/{id}")
@@ -41,18 +49,22 @@ public class UserController {
     }
 
     @GetMapping("/kakao/callback")
-    public ResponseEntity<LoginResponse> kakaoCallback(@RequestParam(value = "code") String code) {
-        // 카카오 소셜 로그인 콜백 처리 로직
-        SocialLoginRequest request = new SocialLoginRequest(UserType.KAKAO, code);
-        return ResponseEntity.ok(userService.doSocialLogin(request));
+    public ResponseEntity<String> kakaoCallback(@RequestParam(value = "code") String code) {
+        // 1. 인가 코드로 액세스 토큰 발급
+        String accessToken = userService.getAccessTokenFromKakao(code);
+
+        // 2. 액세스 토큰 반환
+        return ResponseEntity.ok("Kakao Access Token: " + accessToken);
     }
 
+    // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String accessToken) {
         userService.logoutFromKakao(accessToken);
         return ResponseEntity.ok("Logged out successfully.");
     }
 
+    // 회원탈퇴
     @PostMapping("/unlink")
     public ResponseEntity<String> unlinkKakaoUser(@RequestHeader("Authorization") String accessToken) {
         userService.unlinkKakaoUser(accessToken);
@@ -94,8 +106,11 @@ public class UserController {
             SocialUserResponse socialUserResponse = userService.getUserInfoFromKakaoAccessToken(kakaoAccessToken);
             Long kakaoUserId = socialUserResponse.getKakaoUserId();
 
+            // 추가 매개변수가 필요할 경우, 해당 값을 준비 (예: 닉네임, 추가 정보 등)
+            String additionalParameter = socialUserResponse.getName(); // 예시로 닉네임 사용
+
             // 카카오 사용자 ID를 통해 유저 정보를 찾거나 새로 생성
-            Users user = userService.findOrCreateUserByKakaoId(kakaoUserId, socialUserResponse);
+            Users user = userService.findOrCreateUserByKakaoId(kakaoUserId, socialUserResponse, additionalParameter);
 
             // 새로운 JWT 리프레시 토큰 생성 (14일 유효)
             String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
@@ -109,4 +124,5 @@ public class UserController {
                     .body("Failed to validate Kakao access token or retrieve user info.");
         }
     }
+
 }

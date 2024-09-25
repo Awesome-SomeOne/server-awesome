@@ -30,21 +30,21 @@ public class BusinessReviewsController {
     @GetMapping("/view/{businessId}")
     public ResponseEntity<BusinessReviewResponse> getReview(
             @PathVariable Long businessId) {
-        Long userId = SecurityUtil.getAuthenticatedUserId(); // JWT에서 사용자 ID 가져오기
+        Long userId = SecurityUtil.getAuthenticatedUserId();
         return ResponseEntity.ok(businessReviewsService.getBusinessReview(businessId, userId));
     }
 
     @DeleteMapping("/delete/{businessId}")
     public ResponseEntity<Void> deleteReview(
             @PathVariable Long businessId) {
-        Long userId = SecurityUtil.getAuthenticatedUserId(); // JWT에서 사용자 ID 가져오기
+        Long userId = SecurityUtil.getAuthenticatedUserId();
         businessReviewsService.deleteBusinessReview(businessId, userId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<BusinessReviewResponse>> getAllReviews() {
-        Long userId = SecurityUtil.getAuthenticatedUserId(); // JWT에서 사용자 ID 가져오기
+        Long userId = SecurityUtil.getAuthenticatedUserId();
         List<BusinessReviewResponse> response = businessReviewsService.getAllBusinessReviews(userId);
         return ResponseEntity.ok(response);
     }

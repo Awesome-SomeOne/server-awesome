@@ -14,4 +14,5 @@ public class UserResponse {
     private String userId;
     private String userName;
     private String userEmail;
+    private Long kakaoUserId;
 }

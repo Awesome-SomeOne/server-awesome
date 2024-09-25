@@ -16,19 +16,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -40,36 +35,55 @@ public class UserService {
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
     private final JwtTokenProvider jwtTokenProvider;
+    private final Map<String, String> cachedAccessTokens = new ConcurrentHashMap<>(); // 인가 코드로 액세스 토큰 캐싱
 
-    public LoginResponse doSocialLogin(SocialLoginRequest request) {
-        SocialLoginService loginService = this.getLoginService(request.getUserType());
+    // 인가 코드로 카카오 액세스 토큰 발급
+    public synchronized String getAccessTokenFromKakao(String code) {
+        // 캐싱된 액세스 토큰이 있는지 확인
+        if (cachedAccessTokens.containsKey(code)) {
+            log.info("Returning cached access token for code: {}", code);
+            return cachedAccessTokens.get(code);  // 이미 캐싱된 액세스 토큰 반환
+        }
 
-        // 카카오 액세스 토큰과 사용자 정보 가져오기
-        SocialAuthResponse socialAuthResponse = loginService.getAccessToken(request.getCode());
-        SocialUserResponse socialUserResponse = loginService.getUserInfo(socialAuthResponse.getAccess_token());
+        SocialLoginService loginService = this.getLoginService(UserType.KAKAO);
 
-        // 사용자 조회 및 없는 경우 새 사용자 등록
-        Users user = userRepository.findByKakaoUserId(socialUserResponse.getId()) // 카카오 사용자 ID로 조회
-                .orElseGet(() -> this.joinUser(UserJoinRequest.builder()
-                        .kakaoUserId(socialUserResponse.getId()) // 카카오 사용자 ID 저장
-                        .userEmail(socialUserResponse.getEmail())
-                        .userName(socialUserResponse.getName())
-                        .userType(request.getUserType())
-                        .build()));
+        try {
+            // 인가 코드를 사용하여 액세스 토큰 발급 (한 번만 사용)
+            SocialAuthResponse socialAuthResponse = loginService.getAccessToken(code);
 
-        // JWT 생성 (Access Token과 Refresh Token 생성)
-        String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
-        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
+            // 액세스 토큰 캐싱
+            cachedAccessTokens.put(code, socialAuthResponse.getAccess_token());
+            log.info("Cached access token for code: {}", code);
+
+            return socialAuthResponse.getAccess_token();
+        } catch (HttpClientErrorException e) {
+            log.error("Error getting access token from Kakao", e);
+            throw new RuntimeException("Failed to get access token from Kakao", e);
+        }
+    }
+
+    // 액세스 토큰과 닉네임을 사용하여 JWT 발급
+    public LoginResponse issueJwtToken(String accessToken, String nickname) {
+        // 액세스 토큰으로 사용자 정보 가져오기
+        SocialUserResponse socialUserResponse = getUserInfoFromKakaoAccessToken(accessToken);
+
+        // 사용자 조회 또는 생성
+        Users user = findOrCreateUserByKakaoId(socialUserResponse.getKakaoUserId(), socialUserResponse, nickname);
+
+        // JWT 생성
+        String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()),
+                new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
+        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()),
+                new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
 
         // 사용자 객체에 리프레시 토큰 저장
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        /// JWT 액세스 토큰과 리프레시 토큰 반환
         return LoginResponse.builder()
                 .id(user.getUsers_id())
-                .accessToken(accessToken)  // JWT 액세스 토큰
-                .refreshToken(refreshToken) // JWT 리프레시 토큰
+                .accessToken(jwtAccessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -234,7 +248,7 @@ public class UserService {
     }
 
     // 카카오 사용자 ID로 유저를 찾거나 새로 생성하는 메서드
-    public Users findOrCreateUserByKakaoId(Long kakaoUserId, SocialUserResponse socialUserResponse) {
+    public Users findOrCreateUserByKakaoId(Long kakaoUserId, SocialUserResponse socialUserResponse, String additionalParameter) {
         Optional<Users> existingUser = userRepository.findByKakaoUserId(String.valueOf(kakaoUserId));
         if (existingUser.isPresent()) {
             log.info("User found for Kakao ID: {}", kakaoUserId);

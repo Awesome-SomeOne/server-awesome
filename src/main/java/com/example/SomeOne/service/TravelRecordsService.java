@@ -1,6 +1,7 @@
 package com.example.SomeOne.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.example.SomeOne.config.SecurityUtil;
 import com.example.SomeOne.domain.*;
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
 import com.example.SomeOne.dto.TravelRecords.Request.CreateTravelRecordRequest;
@@ -36,13 +37,13 @@ public class TravelRecordsService {
 
     // 여행 기록 생성
     @Transactional
-    public TravelRecordResponse create(List<MultipartFile> images, CreateTravelRecordRequest request) {
+    public TravelRecordResponse create(List<MultipartFile> images, CreateTravelRecordRequest request, Long userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
         // 여행 계획 조회
         TravelPlans plan = travelPlansRepository.findById(request.getPlanId())
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + request.getPlanId()));
-
-        // 사용자 조회
-        Users user = plan.getUser();
 
         // 여행 기록 생성
         TravelRecords record = TravelRecords.builder()
@@ -67,7 +68,7 @@ public class TravelRecordsService {
                 savedRecord.getRecordId(),
                 request.getOneLineReview(),
                 request.getOverallReview(),
-                imageUrls,  // 리스트로 변경
+                imageUrls,
                 request.isPublicPrivate(),
                 request.getPlanId(),
                 user.getUsers_id(),
@@ -115,13 +116,16 @@ public class TravelRecordsService {
 
     // 여행 기록 수정
     @Transactional
-    public TravelRecordResponse update(Long recordId, CreateTravelRecordRequest request, List<MultipartFile> newImages) {
+    public TravelRecordResponse update(Long recordId, CreateTravelRecordRequest request, List<MultipartFile> newImages, Long userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
         // 여행 기록 조회
         TravelRecords record = travelRecordsRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel record not found with id: " + recordId));
 
         // 비즈니스 리뷰 처리
-        List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(record.getPlan(), record.getUser(), record, request);
+        List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(record.getPlan(), user, record, request);
 
         // 여행 기록 수정 및 이미지 저장
         if (request.getOneLineReview() != null) {
@@ -138,7 +142,6 @@ public class TravelRecordsService {
 
         travelRecordsRepository.save(record);
 
-        // TravelRecordResponse 객체 생성 및 반환
         return new TravelRecordResponse(
                 record.getRecordId(),
                 record.getRecordTitle(),
@@ -146,24 +149,28 @@ public class TravelRecordsService {
                 imageUrls,
                 record.getPublicPrivate(),
                 record.getPlan().getPlanId(),
-                record.getUser().getUsers_id(),
+                user.getUsers_id(),
                 businessReviewResponses
         );
     }
 
     // 여행 기록 삭제
     @Transactional
-    public void delete(Long recordId) {
+    public void delete(Long recordId, Long userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
         TravelRecords record = travelRecordsRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel record not found with id: " + recordId));
 
-        // 모든 이미지 삭제
+        if (!record.getUser().equals(user)) {
+            throw new IllegalArgumentException("You do not have permission to delete this record.");
+        }
+
+        // 이미지 삭제
         for (RecordImages image : record.getRecordImages()) {
             deleteImageFromS3(image.getImageUrl());
         }
-
-        // 관련된 비즈니스 리뷰 삭제
-        businessReviewsRepository.deleteByTravelRecord(record);
 
         // 여행 기록 삭제
         travelRecordsRepository.delete(record);
@@ -186,19 +193,18 @@ public class TravelRecordsService {
 
     // 여행 기록 조회
     @Transactional
-    public TravelRecordResponse getRecordById(Long recordId) {
+    public TravelRecordResponse getRecordById(Long recordId, Long userId) {
         TravelRecords record = travelRecordsRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel record not found with id: " + recordId));
 
-        // 이미지 URL 목록 생성
+        if (!record.getUser().getUsers_id().equals(userId)) {
+            throw new IllegalArgumentException("You do not have permission to view this record.");
+        }
+
         List<String> imageUrls = record.getRecordImages().stream()
                 .map(RecordImages::getImageUrl)
                 .collect(Collectors.toList());
 
-        // 비즈니스 리뷰 처리
-        List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(record.getPlan(), record.getUser(), record, null);
-
-        // TravelRecordResponse 객체 생성 및 반환
         return new TravelRecordResponse(
                 record.getRecordId(),
                 record.getRecordTitle(),
@@ -207,7 +213,7 @@ public class TravelRecordsService {
                 record.getPublicPrivate(),
                 record.getPlan().getPlanId(),
                 record.getUser().getUsers_id(),
-                businessReviewResponses
+                handleBusinessReviews(record.getPlan(), record.getUser(), record, null)
         );
     }
 
@@ -226,8 +232,7 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
-                                    .stream()
+                            record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
@@ -241,9 +246,12 @@ public class TravelRecordsService {
 
     // 여행 계획별 여행 기록 조회
     @Transactional
-    public List<TravelRecordResponse> getRecordsByPlan(Long planId) {
+    public List<TravelRecordResponse> getRecordsByPlan(Long planId, Long userId) {
         TravelPlans plan = travelPlansRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + planId));
+
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         List<TravelRecords> records = travelRecordsRepository.findByPlanWithImagesOrderByRecordIdDesc(plan);
 
@@ -254,8 +262,7 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
-                                    .stream()
+                            record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
@@ -282,8 +289,7 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
-                                    .stream()
+                            record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
@@ -297,9 +303,12 @@ public class TravelRecordsService {
 
     // 여행 계획별 공개된 여행 기록 조회
     @Transactional
-    public List<TravelRecordResponse> getRecordsByPlanTrue(Long planId) {
+    public List<TravelRecordResponse> getRecordsByPlanTrue(Long planId, Long userId) {
         TravelPlans plan = travelPlansRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + planId));
+
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         List<TravelRecords> records = travelRecordsRepository.findByPlanAndPublicPrivateOrderByRecordIdDesc(plan, true);
 
@@ -310,8 +319,7 @@ public class TravelRecordsService {
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
-                            record.getRecordImages().isEmpty() ? null : record.getRecordImages()
-                                    .stream()
+                            record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),  // 이미지 리스트로 변환
                             record.getPublicPrivate(),
@@ -322,4 +330,5 @@ public class TravelRecordsService {
                 })
                 .collect(Collectors.toList());
     }
+
 }
