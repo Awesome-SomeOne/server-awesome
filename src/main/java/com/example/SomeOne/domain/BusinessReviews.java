@@ -30,6 +30,12 @@ public class BusinessReviews {
 
     private String businessReview;
 
+    // 비즈니스 리뷰 신고 상태
+    private Boolean isReported = false; // 기본값은 신고되지 않음
+
+    // 리뷰 공개 여부 (공개 여부는 필요에 따라 설정)
+    private Boolean publicPrivate = true; // 기본값은 공개
+
     // TravelRecords와의 연관 관계 추가
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "travel_record_id")
@@ -56,5 +62,11 @@ public class BusinessReviews {
                 travelRecord.getBusinessReviews().add(this);
             }
         }
+    }
+
+    // 신고 처리 메서드
+    public void hideRecordDueToReport() {
+        this.publicPrivate = false; // 신고로 인해 비공개 처리
+        this.isReported = true;     // 신고 상태 업데이트
     }
 }

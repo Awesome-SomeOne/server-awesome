@@ -28,10 +28,14 @@ public class BusinessReviewsController {
     }
 
     @GetMapping("/view/{businessId}")
-    public ResponseEntity<BusinessReviewResponse> getReview(
-            @PathVariable Long businessId) {
+    public ResponseEntity<?> getReview(@PathVariable Long businessId) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
-        return ResponseEntity.ok(businessReviewsService.getBusinessReview(businessId, userId));
+        BusinessReviewResponse reviewResponse = businessReviewsService.getBusinessReview(businessId, userId);
+
+        if (reviewResponse == null) {
+            return ResponseEntity.status(404).body("리뷰가 없습니다.");
+        }
+        return ResponseEntity.ok(reviewResponse);
     }
 
     @DeleteMapping("/delete/{businessId}")
@@ -43,9 +47,27 @@ public class BusinessReviewsController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<BusinessReviewResponse>> getAllReviews() {
+    public ResponseEntity<?> getAllReviews() {
         Long userId = SecurityUtil.getAuthenticatedUserId();
         List<BusinessReviewResponse> response = businessReviewsService.getAllBusinessReviews(userId);
+
+        if (response.isEmpty()) {
+            return ResponseEntity.status(404).body("리뷰가 없습니다.");
+        }
+
         return ResponseEntity.ok(response);
+    }
+
+    // 리뷰 신고
+    @PostMapping("/report/{reviewId}")
+    public ResponseEntity<?> reportReview(@PathVariable Long reviewId) {
+        Long userId = SecurityUtil.getAuthenticatedUserId(); // JWT에서 사용자 ID 가져오기
+        boolean isReported = businessReviewsService.reportReview(reviewId, userId);
+
+        if (!isReported) {
+            return ResponseEntity.status(404).body("리뷰를 찾을 수 없습니다.");
+        }
+
+        return ResponseEntity.ok("리뷰가 성공적으로 신고되었습니다.");
     }
 }

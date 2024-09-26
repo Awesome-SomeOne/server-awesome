@@ -119,7 +119,11 @@ public class BusinessReviewsService {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        List<BusinessReviews> reviews = businessReviewsRepository.findByUser(user);
+        // 신고되지 않은 리뷰만 필터링
+        List<BusinessReviews> reviews = businessReviewsRepository.findByUser(user)
+                .stream()
+                .filter(review -> !review.getIsReported())  // 신고되지 않은 리뷰만 필터링
+                .collect(Collectors.toList());
 
         return reviews.stream()
                 .map(review -> new BusinessReviewResponse(
@@ -134,5 +138,20 @@ public class BusinessReviewsService {
                                 .collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public boolean reportReview(Long reviewId, Long userId) {
+        BusinessReviews review = businessReviewsRepository.findById(reviewId)
+                .orElse(null);
+
+        if (review == null) {
+            return false; // 리뷰가 없을 경우 false 반환
+        }
+
+        // 리뷰를 신고 처리하고 비공개로 설정
+        review.hideRecordDueToReport();
+        businessReviewsRepository.save(review);
+        return true; // 신고 성공 시 true 반환
     }
 }
