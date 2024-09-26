@@ -109,4 +109,23 @@ public class FavoritesService {
                         favorite.getBusiness().getImg_url()))
                 .collect(Collectors.toList());
     }
+
+    // 비즈니스 타입별로 좋아요한 장소 조회
+    public List<FavoriteResponse> getFavoritesByBusinessType(Long userId, String businessType) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // 비즈니스 타입으로 필터링
+        List<Favorites> favorites = favoriteRepository.findByUser(user).stream()
+                .filter(favorite -> favorite.getBusiness().getBusinessType().name().equals(businessType))
+                .collect(Collectors.toList());
+
+        // FavoriteResponse로 변환하여 반환
+        return favorites.stream()
+                .map(favorite -> new FavoriteResponse(favorite.getBusiness().getBusiness_name(),
+                        favorite.getBusiness().getBusinessType().name(),
+                        favorite.getBusiness().getAddress(),
+                        favorite.getBusiness().getImg_url()))
+                .collect(Collectors.toList());
+    }
 }

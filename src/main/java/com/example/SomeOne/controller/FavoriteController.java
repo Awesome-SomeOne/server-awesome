@@ -45,4 +45,13 @@ public class FavoriteController {
         List<FavoriteResponse> response = favoriteService.getFavorites(userId);
         return ResponseEntity.ok(response);
     }
+
+    // 비즈니스 타입별로 좋아요한 장소 조회 API
+    @GetMapping("/{userId}/business-type/{businessType}")
+    public ResponseEntity<List<FavoriteResponse>> getFavoritesByBusinessType(
+            @PathVariable String businessType) {
+        Long userId = getAuthenticatedUserId();
+        List<FavoriteResponse> response = favoriteService.getFavoritesByBusinessType(userId, businessType);
+        return ResponseEntity.ok(response);
+    }
 }
