@@ -1,6 +1,7 @@
 package com.example.SomeOne.controller;
 
 import com.example.SomeOne.config.SecurityUtil;
+import com.example.SomeOne.domain.enums.ReportReason;
 import com.example.SomeOne.dto.Businesses.request.CreateBusinessReviewRequest;
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
 import com.example.SomeOne.service.BusinessReviewsService;
@@ -60,14 +61,14 @@ public class BusinessReviewsController {
 
     // 리뷰 신고
     @PostMapping("/report/{reviewId}")
-    public ResponseEntity<?> reportReview(@PathVariable Long reviewId) {
+    public ResponseEntity<?> reportReview(@PathVariable Long reviewId, @RequestParam ReportReason reportReason) {
         Long userId = SecurityUtil.getAuthenticatedUserId(); // JWT에서 사용자 ID 가져오기
-        boolean isReported = businessReviewsService.reportReview(reviewId, userId);
+        boolean isReported = businessReviewsService.reportReview(reviewId, userId, reportReason);
 
         if (!isReported) {
             return ResponseEntity.status(404).body("리뷰를 찾을 수 없습니다.");
         }
 
-        return ResponseEntity.ok("리뷰가 성공적으로 신고되었습니다.");
+        return ResponseEntity.ok("리뷰가 성공적으로 신고되었습니다. 신고 사유: " + reportReason);
     }
 }

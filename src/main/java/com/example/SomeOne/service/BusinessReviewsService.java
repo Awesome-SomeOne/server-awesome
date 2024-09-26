@@ -4,6 +4,7 @@ import com.example.SomeOne.domain.BusinessReviewImages;
 import com.example.SomeOne.domain.BusinessReviews;
 import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.Users;
+import com.example.SomeOne.domain.enums.ReportReason;
 import com.example.SomeOne.dto.Businesses.request.CreateBusinessReviewRequest;
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
 import com.example.SomeOne.exception.ResourceNotFoundException;
@@ -140,8 +141,9 @@ public class BusinessReviewsService {
                 .collect(Collectors.toList());
     }
 
+    // 리뷰 신고 처리
     @Transactional
-    public boolean reportReview(Long reviewId, Long userId) {
+    public boolean reportReview(Long reviewId, Long userId, ReportReason reportReason) {
         BusinessReviews review = businessReviewsRepository.findById(reviewId)
                 .orElse(null);
 
@@ -149,7 +151,8 @@ public class BusinessReviewsService {
             return false; // 리뷰가 없을 경우 false 반환
         }
 
-        // 리뷰를 신고 처리하고 비공개로 설정
+        // 리뷰 신고 처리
+        review.report(reportReason); // 신고 사유를 함께 처리
         review.hideRecordDueToReport();
         businessReviewsRepository.save(review);
         return true; // 신고 성공 시 true 반환
