@@ -58,17 +58,27 @@ public class UserController {
         return ResponseEntity.ok("Kakao Access Token: " + accessToken);
     }
 
-    // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String accessToken) {
+        // "Bearer " 접두어 제거
+        accessToken = accessToken.replace("Bearer ", "");
+
+        // 카카오 로그아웃 서비스 호출
         userService.logoutFromKakao(accessToken);
-        return ResponseEntity.ok("Logged out successfully.");
+
+        // 성공 응답 반환
+        return ResponseEntity.ok("Logged out from Kakao successfully.");
     }
 
     // 회원탈퇴
     @PostMapping("/unlink")
     public ResponseEntity<String> unlinkKakaoUser(@RequestHeader("Authorization") String accessToken) {
+        accessToken = accessToken.replace("Bearer ", "");
+
+        // 카카오 회원 탈퇴 서비스 호출
         userService.unlinkKakaoUser(accessToken);
+
+        // 성공 응답 반환
         return ResponseEntity.ok("Kakao account unlinked successfully.");
     }
 

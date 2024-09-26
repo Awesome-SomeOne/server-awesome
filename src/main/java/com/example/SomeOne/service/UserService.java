@@ -134,9 +134,54 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
     }
 
-    // 카카오 로그아웃 처리
+    // 로그아웃 처리 (카카오 로그아웃 호출)
     public void logoutFromKakao(String accessToken) {
-        String logoutUrl = "https://someone.com/logout";
+        String kakaoLogoutUrl = "https://kapi.kakao.com/v1/user/logout"; // 카카오 로그아웃 API 엔드포인트
+        HttpHeaders headers = new HttpHeaders();
+
+        // Bearer Authorization 설정
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            // 카카오 API에 로그아웃 요청을 보냄
+            ResponseEntity<String> response = restTemplate.postForEntity(kakaoLogoutUrl, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Kakao user successfully logged out");
+            } else {
+                log.error("Kakao logout failed, response code: {}, response body: {}", response.getStatusCode(), response.getBody());
+            }
+        } catch (HttpClientErrorException e) {
+            log.error("Kakao logout failed, error: {}, response body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to logout from Kakao", e);
+        }
+    }
+
+    // 카카오 사용자 탈퇴 처리
+    public void unlinkKakaoUser(String accessToken) {
+        String kakaoUnlinkUrl = "https://kapi.kakao.com/v1/user/unlink"; // 카카오 회원 탈퇴 API 엔드포인트
+        HttpHeaders headers = new HttpHeaders();
+
+        // Bearer Authorization 설정
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            // 카카오 API에 회원 탈퇴 요청을 보냄
+            ResponseEntity<String> response = restTemplate.postForEntity(kakaoUnlinkUrl, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Kakao account successfully unlinked");
+            } else {
+                log.error("Kakao unlink failed, response code: {}, response body: {}", response.getStatusCode(), response.getBody());
+            }
+        } catch (HttpClientErrorException e) {
+            log.error("Kakao unlink failed, error: {}, response body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to unlink Kakao account", e);
+        }
     }
 
     // 엑세스 토큰에서 사용자 가져오기
@@ -180,30 +225,6 @@ public class UserService {
             // 그 외의 예외 처리
             log.error("Unexpected error occurred while retrieving user info", e);
             throw new RuntimeException("Failed to retrieve user info", e);
-        }
-    }
-
-    // 카카오 사용자 탈퇴 처리
-    public void unlinkKakaoUser(String accessToken) {
-        String unlinkUrl = "https://kapi.kakao.com/v1/user/unlink";
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(unlinkUrl, entity, String.class);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("카카오 사용자 탈퇴 성공");
-
-                // 로컬 데이터베이스에서 사용자 삭제 (user_id 기준으로 삭제)
-                Long userId = findUserIdByAccessToken(accessToken); // 사용자 ID를 Access Token으로 찾는 로직 필요
-                userRepository.deleteById(userId); // 해당 사용자 ID로 삭제
-            }
-        } catch (Exception e) {
-            log.error("카카오 사용자 탈퇴 실패", e);
         }
     }
 
