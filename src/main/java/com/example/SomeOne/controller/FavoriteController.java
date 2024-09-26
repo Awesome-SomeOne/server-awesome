@@ -32,14 +32,14 @@ public class FavoriteController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{userId}/{businessId}")
+    @GetMapping("/business/{businessId}")
     public ResponseEntity<FavoriteResponse> getFavorite(@PathVariable Long businessId) {
         Long userId = getAuthenticatedUserId();
         FavoriteResponse response = favoriteService.getFavorite(userId, businessId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/get-all")
     public ResponseEntity<List<FavoriteResponse>> getFavorites() {
         Long userId = getAuthenticatedUserId();
         List<FavoriteResponse> response = favoriteService.getFavorites(userId);
@@ -47,7 +47,7 @@ public class FavoriteController {
     }
 
     // 비즈니스 타입별로 좋아요한 장소 조회 API
-    @GetMapping("/{userId}/business-type/{businessType}")
+    @GetMapping("/business-type/{businessType}")
     public ResponseEntity<List<FavoriteResponse>> getFavoritesByBusinessType(
             @PathVariable String businessType) {
         Long userId = getAuthenticatedUserId();
