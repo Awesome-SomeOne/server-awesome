@@ -32,14 +32,15 @@ public class UserController {
         return ResponseEntity.ok(accessToken);
     }
 
-    // 액세스 토큰을 통해 JWT 토큰 발급 API
+    /// 액세스 토큰을 통해 JWT 토큰 발급 API
     @PostMapping("/issue-jwt-token")
     public ResponseEntity<LoginResponse> issueJwtToken(
-            @RequestHeader("Authorization") String accessToken,
-            @RequestParam String nickname) {
+            @RequestHeader("Authorization") String accessToken) {
         // "Bearer " 접두어 제거
         accessToken = accessToken.replace("Bearer ", "");
-        LoginResponse loginResponse = userService.issueJwtToken(accessToken, nickname);
+
+        // 닉네임 없이 JWT 발급
+        LoginResponse loginResponse = userService.issueJwtToken(accessToken);
         return ResponseEntity.ok(loginResponse);
     }
 

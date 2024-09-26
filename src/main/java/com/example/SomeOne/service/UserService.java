@@ -69,13 +69,13 @@ public class UserService {
         }
     }
 
-    // 액세스 토큰과 닉네임을 사용하여 JWT 발급
-    public LoginResponse issueJwtToken(String accessToken, String nickname) {
+    // 액세스 토큰을 사용하여 JWT 발급
+    public LoginResponse issueJwtToken(String accessToken) {
         // 액세스 토큰으로 사용자 정보 가져오기
         SocialUserResponse socialUserResponse = getUserInfoFromKakaoAccessToken(accessToken);
 
         // 사용자 조회 또는 생성
-        Users user = findOrCreateUserByKakaoId(socialUserResponse.getKakaoUserId(), socialUserResponse, nickname);
+        Users user = findOrCreateUserByKakaoId(socialUserResponse.getKakaoUserId(), socialUserResponse, null);
 
         // JWT 생성
         String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()),
