@@ -57,29 +57,27 @@ public class TravelRecordsController {
     }
 
     // 사용자별 여행 기록 조회
+    @GetMapping("/view-user")
     public List<TravelRecordResponse> getRecordsByUser() {
-        Long userId = SecurityUtil.getAuthenticatedUserId();
-        return travelRecordsService.getRecordsByUser(userId);
+        return travelRecordsService.getRecordsByUser();
     }
 
-    //여행 기록별 여행 기록 조회
+    // 여행 계획별 여행 기록 조회
     @GetMapping("/view-plan/{planId}")
     public List<TravelRecordResponse> getRecordsByPlan(@PathVariable Long planId) {
-        Long userId = SecurityUtil.getAuthenticatedUserId();
-        return travelRecordsService.getRecordsByPlan(planId, userId);
+        return travelRecordsService.getRecordsByPlan(planId);
     }
 
     // 사용자별 공개된 여행 기록 조회
     @GetMapping("/view-user-true")
     public List<TravelRecordResponse> getRecordsByUserTrue() {
-        Long userId = SecurityUtil.getAuthenticatedUserId();
-        return travelRecordsService.getRecordsByUserTrue(userId);
+        return travelRecordsService.getRecordsByUserTrue();
     }
 
-    //여행 기록별 공개된 여행 기록 조회
+    // 여행 계획별 공개된 여행 기록 조회
     @GetMapping("/view-plan-true/{planId}")
     public List<TravelRecordResponse> getRecordsByPlanTrue(@PathVariable Long planId) {
-        Long userId = SecurityUtil.getAuthenticatedUserId();
-        return travelRecordsService.getRecordsByPlanTrue(planId, userId);
+        return travelRecordsService.getRecordsByPlanTrue(planId);
     }
+
 }

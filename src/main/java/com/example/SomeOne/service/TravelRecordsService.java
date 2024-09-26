@@ -219,7 +219,8 @@ public class TravelRecordsService {
 
     // 사용자별 여행 기록 조회
     @Transactional
-    public List<TravelRecordResponse> getRecordsByUser(Long userId) {
+    public List<TravelRecordResponse> getRecordsByUser() {
+        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
@@ -246,7 +247,8 @@ public class TravelRecordsService {
 
     // 여행 계획별 여행 기록 조회
     @Transactional
-    public List<TravelRecordResponse> getRecordsByPlan(Long planId, Long userId) {
+    public List<TravelRecordResponse> getRecordsByPlan(Long planId) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
         TravelPlans plan = travelPlansRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + planId));
 
@@ -276,7 +278,8 @@ public class TravelRecordsService {
 
     // 사용자별 공개된 여행 기록 조회
     @Transactional
-    public List<TravelRecordResponse> getRecordsByUserTrue(Long userId) {
+    public List<TravelRecordResponse> getRecordsByUserTrue() {
+        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
@@ -303,7 +306,8 @@ public class TravelRecordsService {
 
     // 여행 계획별 공개된 여행 기록 조회
     @Transactional
-    public List<TravelRecordResponse> getRecordsByPlanTrue(Long planId, Long userId) {
+    public List<TravelRecordResponse> getRecordsByPlanTrue(Long planId) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
         TravelPlans plan = travelPlansRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + planId));
 
@@ -330,5 +334,4 @@ public class TravelRecordsService {
                 })
                 .collect(Collectors.toList());
     }
-
 }

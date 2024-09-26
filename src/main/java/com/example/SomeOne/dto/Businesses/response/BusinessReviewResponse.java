@@ -22,12 +22,18 @@ public class BusinessReviewResponse {
     private Integer rating;
     private String businessReview;
     private List<String> imageUrls;
+    private String xAddress; // x 좌표
+    private String yAddress; // y 좌표
 
-    // 엔티티에서 DTO로 변환하는 메서드 추가
+    // 엔티티에서 DTO로 변환하는 메서드 수정
     public static BusinessReviewResponse fromEntity(BusinessReviews review, List<BusinessReviewImages> reviewImages) {
         List<String> imageUrls = reviewImages.stream()
                 .map(BusinessReviewImages::getImageUrl)
                 .collect(Collectors.toList());
+
+        // Businesses 엔티티에서 x, y 좌표를 가져옴
+        String xAddress = review.getBusiness().getX_address();
+        String yAddress = review.getBusiness().getY_address();
 
         return BusinessReviewResponse.builder()
                 .id(review.getReviewId())
@@ -36,6 +42,9 @@ public class BusinessReviewResponse {
                 .rating(review.getRating())
                 .businessReview(review.getBusinessReview())
                 .imageUrls(imageUrls)
+                .xAddress(xAddress)  // x 좌표 설정
+                .yAddress(yAddress)  // y 좌표 설정
                 .build();
     }
 }
+

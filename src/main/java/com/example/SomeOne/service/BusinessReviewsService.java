@@ -53,6 +53,8 @@ public class BusinessReviewsService {
                 .rating(review.getRating())
                 .businessReview(review.getBusinessReview())
                 .imageUrls(imageUrls)
+                .xAddress(business.getX_address())
+                .yAddress(business.getY_address())
                 .build();
     }
 
@@ -95,6 +97,8 @@ public class BusinessReviewsService {
                 .rating(review.getRating())
                 .businessReview(review.getBusinessReview())
                 .imageUrls(imageUrls)
+                .xAddress(business.getX_address())
+                .yAddress(business.getY_address())
                 .build();
     }
 
@@ -127,17 +131,19 @@ public class BusinessReviewsService {
                 .collect(Collectors.toList());
 
         return reviews.stream()
-                .map(review -> new BusinessReviewResponse(
-                        review.getReviewId(),
-                        review.getBusiness().getBusiness_id(),
-                        review.getUser().getUsers_id(),
-                        review.getRating(),
-                        review.getBusinessReview(),
-                        businessReviewImagesRepository.findByReview(review)
+                .map(review -> BusinessReviewResponse.builder()
+                        .id(review.getReviewId())
+                        .businessId(review.getBusiness().getBusiness_id())
+                        .userId(review.getUser().getUsers_id())
+                        .rating(review.getRating())
+                        .businessReview(review.getBusinessReview())
+                        .imageUrls(businessReviewImagesRepository.findByReview(review)
                                 .stream()
                                 .map(BusinessReviewImages::getImageUrl)
-                                .collect(Collectors.toList())
-                ))
+                                .collect(Collectors.toList()))
+                        .xAddress(review.getBusiness().getX_address())  // 조회 시 좌표 포함
+                        .yAddress(review.getBusiness().getY_address())  // 조회 시 좌표 포함
+                        .build())
                 .collect(Collectors.toList());
     }
 
