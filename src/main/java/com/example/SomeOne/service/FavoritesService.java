@@ -90,7 +90,8 @@ public class FavoritesService {
         Favorites favorite = favoriteRepository.findByUserAndBusiness(user, business)
                 .orElseThrow(() -> new ResourceNotFoundException("Favorite not found for userId: " + userId + " and businessId: " + businessId));
 
-        return new FavoriteResponse(favorite.getBusiness().getBusiness_name(),
+        return new FavoriteResponse(favorite.getBusiness().getBusiness_id(),
+                favorite.getBusiness().getBusiness_name(),
                 favorite.getBusiness().getBusinessType().name(),
                 favorite.getBusiness().getAddress(),
                 favorite.getBusiness().getImg_url());
@@ -103,7 +104,8 @@ public class FavoritesService {
         List<Favorites> favorites = favoriteRepository.findByUser(user);
 
         return favorites.stream()
-                .map(favorite -> new FavoriteResponse(favorite.getBusiness().getBusiness_name(),
+                .map(favorite -> new FavoriteResponse(favorite.getBusiness().getBusiness_id(),
+                        favorite.getBusiness().getBusiness_name(),
                         favorite.getBusiness().getBusinessType().name(),
                         favorite.getBusiness().getAddress(),
                         favorite.getBusiness().getImg_url()))
@@ -122,7 +124,8 @@ public class FavoritesService {
 
         // FavoriteResponse로 변환하여 반환
         return favorites.stream()
-                .map(favorite -> new FavoriteResponse(favorite.getBusiness().getBusiness_name(),
+                .map(favorite -> new FavoriteResponse(favorite.getBusiness().getBusiness_id(),
+                        favorite.getBusiness().getBusiness_name(),
                         favorite.getBusiness().getBusinessType().name(),
                         favorite.getBusiness().getAddress(),
                         favorite.getBusiness().getImg_url()))

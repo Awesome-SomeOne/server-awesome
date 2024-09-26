@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class FavoriteResponse {
+    private Long businessId;
     private String businessName;
     private String businessType;
     private String address;
