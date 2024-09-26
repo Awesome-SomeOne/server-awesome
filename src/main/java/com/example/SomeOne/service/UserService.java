@@ -78,8 +78,11 @@ public class UserService {
         Users user = findOrCreateUserByKakaoId(socialUserResponse.getKakaoUserId(), socialUserResponse, null);
 
         // JWT 생성
+//        String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()),
+//                new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
         String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()),
-                new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
+                new Date(System.currentTimeMillis() + 28800000)); // 8시간 유효
+
         String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()),
                 new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
 
