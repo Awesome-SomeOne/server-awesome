@@ -1,7 +1,9 @@
 package com.example.SomeOne.controller;
 
 
+import com.example.SomeOne.config.SecurityUtil;
 import com.example.SomeOne.dto.Businesses.response.BusinessResponse;
+import com.example.SomeOne.service.KakaoMapService;
 import com.example.SomeOne.service.MapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,8 @@ import java.util.List;
 public class MapController {
 
     private final MapService mapService;
+    private final KakaoMapService kakaoMapService;
+
 
     // 비즈니스 정보 마커 표시를 위한 엔드포인트
     @GetMapping("/businesses")
@@ -24,18 +28,19 @@ public class MapController {
         return ResponseEntity.ok(businessMarkers);
     }
 
-    // 특정 사용자의 여행 장소만 마커로 표시하는 엔드포인트
-    @GetMapping("/businesses/user/{userId}")
-    public ResponseEntity<List<BusinessResponse>> getUserBusinessMarkers(@PathVariable Long userId) {
+    // 특정 사용자의 여행 장소만 마커로 표시하는 엔드포인트 (JWT에서 사용자 ID 가져오기)
+    @GetMapping("/businesses/user")
+    public ResponseEntity<List<BusinessResponse>> getUserBusinessMarkers() {
+        Long userId = SecurityUtil.getAuthenticatedUserId(); // JWT에서 사용자 ID 가져오기
         List<BusinessResponse> businessMarkers = mapService.getBusinessLocationsByUser(userId);
         return ResponseEntity.ok(businessMarkers);
     }
 
-    //내 여행 장소 검색 API
+    // 내 여행 장소 검색 API (JWT에서 사용자 ID 가져오기)
     @GetMapping("/my-places/search")
     public ResponseEntity<List<BusinessResponse>> searchMyPlaces(
-            @RequestParam Long userId,
             @RequestParam String keyword) {
+        Long userId = SecurityUtil.getAuthenticatedUserId(); // JWT에서 사용자 ID 가져오기
         List<BusinessResponse> places = mapService.searchMyPlaces(userId, keyword);
         return ResponseEntity.ok(places);
     }
@@ -55,9 +60,10 @@ public class MapController {
     }
 
     // 카카오 API를 사용한 장소 검색
-    @GetMapping("/search")
+    @GetMapping("/kakao/search")
     public ResponseEntity<List<BusinessResponse>> searchPlaces(@RequestParam String query) {
-        List<BusinessResponse> results = mapService.findPlacesByKeyword(query);
+        List<BusinessResponse> results = kakaoMapService.findPlacesByKeyword(query);
         return ResponseEntity.ok(results);
     }
 }
+
