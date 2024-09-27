@@ -6,7 +6,6 @@ import com.example.SomeOne.domain.*;
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
 import com.example.SomeOne.dto.TravelRecords.Request.CreateTravelRecordRequest;
 import com.example.SomeOne.dto.TravelRecords.Response.TravelRecordResponse;
-import com.example.SomeOne.dto.TravelRecords.TravelDateImages;
 import com.example.SomeOne.exception.ImageStorageException;
 import com.example.SomeOne.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -64,16 +63,21 @@ public class TravelRecordsService {
         // 비즈니스 리뷰 처리
         Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(plan, user);
 
-        // TravelRecordResponse 객체 생성 및 반환
+        // TravelRecordResponse 객체 생성 및 반환 (여행 플랜 정보 포함)
         return new TravelRecordResponse(
                 record.getRecordId(),
                 record.getRecordTitle(),
                 record.getRecordContent(),
                 imageUrls,
                 record.getPublicPrivate(),
-                record.getPlan().getPlanId(),
+                plan.getPlanId(),
+                plan.getPlan_name(),
+                plan.getStartDate(),
+                plan.getEndDate(),
+                plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 변경
+                plan.getStatus(),
                 record.getUser().getUsers_id(),
-                businessReviewResponses // 날짜별 그룹화된 리뷰 전달
+                businessReviewResponses
         );
     }
 
@@ -161,14 +165,22 @@ public class TravelRecordsService {
 
         travelRecordsRepository.save(record);
 
+        // 여행 플랜 정보 추가
+        TravelPlans plan = record.getPlan();
+
         return new TravelRecordResponse(
                 record.getRecordId(),
                 record.getRecordTitle(),
                 record.getRecordContent(),
                 imageUrls,
                 record.getPublicPrivate(),
-                record.getPlan().getPlanId(),
-                user.getUsers_id(),
+                plan.getPlanId(),
+                plan.getPlan_name(),
+                plan.getStartDate(),
+                plan.getEndDate(),
+                plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 변경
+                plan.getStatus(),
+                record.getUser().getUsers_id(),
                 businessReviewResponses
         );
     }
@@ -224,22 +236,30 @@ public class TravelRecordsService {
                 .map(RecordImages::getImageUrl)
                 .collect(Collectors.toList());
 
+        // 여행 플랜 정보 가져오기
+        TravelPlans plan = record.getPlan();
+
         return new TravelRecordResponse(
                 record.getRecordId(),
                 record.getRecordTitle(),
                 record.getRecordContent(),
                 imageUrls,
                 record.getPublicPrivate(),
-                record.getPlan().getPlanId(),
+                plan.getPlanId(),
+                plan.getPlan_name(),
+                plan.getStartDate(),
+                plan.getEndDate(),
+                plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
+                plan.getStatus(),
                 record.getUser().getUsers_id(),
-                handleBusinessReviews(record.getPlan(), record.getUser())
+                handleBusinessReviews(plan, record.getUser())
         );
     }
 
     // 사용자별 여행 기록 조회
     @Transactional
     public List<TravelRecordResponse> getRecordsByUser() {
-        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
+        Long userId = SecurityUtil.getAuthenticatedUserId();
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
@@ -247,7 +267,8 @@ public class TravelRecordsService {
 
         return records.stream()
                 .map(record -> {
-                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(record.getPlan(), user);
+                    TravelPlans plan = record.getPlan();
+                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(plan, user);
                     return new TravelRecordResponse(
                             record.getRecordId(),
                             record.getRecordTitle(),
@@ -256,7 +277,12 @@ public class TravelRecordsService {
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),
                             record.getPublicPrivate(),
-                            record.getPlan().getPlanId(),
+                            plan.getPlanId(),
+                            plan.getPlan_name(),
+                            plan.getStartDate(),
+                            plan.getEndDate(),
+                            plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
+                            plan.getStatus(),
                             record.getUser().getUsers_id(),
                             businessReviewResponses
                     );
@@ -267,12 +293,9 @@ public class TravelRecordsService {
     // 여행 계획별 여행 기록 조회
     @Transactional
     public List<TravelRecordResponse> getRecordsByPlan(Long planId) {
-        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
+        Long userId = SecurityUtil.getAuthenticatedUserId();
         TravelPlans plan = travelPlansRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + planId));
-
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         List<TravelRecords> records = travelRecordsRepository.findByPlanWithImagesOrderByRecordIdDesc(plan);
 
@@ -287,7 +310,12 @@ public class TravelRecordsService {
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),
                             record.getPublicPrivate(),
-                            record.getPlan().getPlanId(),
+                            plan.getPlanId(),
+                            plan.getPlan_name(),
+                            plan.getStartDate(),
+                            plan.getEndDate(),
+                            plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
+                            plan.getStatus(),
                             record.getUser().getUsers_id(),
                             businessReviewResponses
                     );
@@ -298,7 +326,7 @@ public class TravelRecordsService {
     // 사용자별 공개된 여행 기록 조회
     @Transactional
     public List<TravelRecordResponse> getRecordsByUserTrue() {
-        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
+        Long userId = SecurityUtil.getAuthenticatedUserId();
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
@@ -306,7 +334,8 @@ public class TravelRecordsService {
 
         return records.stream()
                 .map(record -> {
-                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(record.getPlan(), user);
+                    TravelPlans plan = record.getPlan();
+                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(plan, user);
                     return new TravelRecordResponse(
                             record.getRecordId(),
                             record.getRecordTitle(),
@@ -315,7 +344,12 @@ public class TravelRecordsService {
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),
                             record.getPublicPrivate(),
-                            record.getPlan().getPlanId(),
+                            plan.getPlanId(),
+                            plan.getPlan_name(),
+                            plan.getStartDate(),
+                            plan.getEndDate(),
+                            plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
+                            plan.getStatus(),
                             record.getUser().getUsers_id(),
                             businessReviewResponses
                     );
@@ -326,12 +360,9 @@ public class TravelRecordsService {
     // 여행 계획별 공개된 여행 기록 조회
     @Transactional
     public List<TravelRecordResponse> getRecordsByPlanTrue(Long planId) {
-        Long userId = SecurityUtil.getAuthenticatedUserId();  // JWT에서 유저 ID 가져오기
+        Long userId = SecurityUtil.getAuthenticatedUserId();
         TravelPlans plan = travelPlansRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + planId));
-
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         List<TravelRecords> records = travelRecordsRepository.findByPlanAndPublicPrivateOrderByRecordIdDesc(plan, true);
 
@@ -346,12 +377,17 @@ public class TravelRecordsService {
                                     .map(RecordImages::getImageUrl)
                                     .collect(Collectors.toList()),
                             record.getPublicPrivate(),
-                            record.getPlan().getPlanId(),
+                            plan.getPlanId(),
+                            plan.getPlan_name(),
+                            plan.getStartDate(),
+                            plan.getEndDate(),
+                            plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
+                            plan.getStatus(),
                             record.getUser().getUsers_id(),
                             businessReviewResponses
                     );
                 })
                 .collect(Collectors.toList());
     }
-}
 
+}

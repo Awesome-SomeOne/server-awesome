@@ -17,4 +17,8 @@ public class Island {
     private String name;
     private String address;
     private String img_url;
+
+    public String getName() {
+        return name;
+    }
 }
