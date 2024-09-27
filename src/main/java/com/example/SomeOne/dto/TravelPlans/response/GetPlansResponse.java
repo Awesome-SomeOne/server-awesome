@@ -17,4 +17,5 @@ public class GetPlansResponse {
     private LocalDate start_date;
     private LocalDate end_date;
     private TravelStatus status;
+    private String img_url;
 }

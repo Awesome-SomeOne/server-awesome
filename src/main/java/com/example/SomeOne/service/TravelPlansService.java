@@ -49,7 +49,7 @@ public class TravelPlansService {
         List<TravelPlans> planList = travelPlansRepository.findByUserOrderByStartDateDesc(user);
 
         return planList.stream().map(p -> new GetPlansResponse(p.getPlanId(), p.getPlan_name(), p.getIsland().getAddress(),
-                p.getStartDate(), p.getEndDate(), p.getStatus())).collect(Collectors.toList());
+                p.getStartDate(), p.getEndDate(), p.getStatus(), p.getIsland().getImg_url())).collect(Collectors.toList());
     }
 
     @Transactional
