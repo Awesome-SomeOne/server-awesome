@@ -1,17 +1,14 @@
 package com.example.SomeOne.dto.Businesses.response;
 
 import com.example.SomeOne.domain.Businesses;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
-@Builder
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class BusinessResponse {
-
     private Long businessId;
     private String businessName;
     private String businessType;
@@ -19,8 +16,9 @@ public class BusinessResponse {
     private String mapX;
     private String mapY;
     private String imageUrl;
+    private boolean isFavorite; // 즐겨찾기 여부 추가
 
-    public BusinessResponse(Businesses business) {
+    public BusinessResponse(Businesses business, boolean isFavorite) {
         this.businessId = business.getBusiness_id();
         this.businessName = business.getBusiness_name();
         this.businessType = business.getBusinessType().name();
@@ -28,5 +26,6 @@ public class BusinessResponse {
         this.mapX = business.getX_address();
         this.mapY = business.getY_address();
         this.imageUrl = business.getImg_url();
+        this.isFavorite = isFavorite;
     }
 }

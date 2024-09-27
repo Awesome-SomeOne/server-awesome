@@ -21,10 +21,11 @@ public class MapController {
     private final KakaoMapService kakaoMapService;
 
 
-    // 비즈니스 정보 마커 표시를 위한 엔드포인트
+    // 비즈니스 정보 마커 표시를 위한 엔드포인트 (모든 사용자에 대해)
     @GetMapping("/businesses")
-    public ResponseEntity<List<BusinessResponse>> getBusinessMarkers() {
-        List<BusinessResponse> businessMarkers = mapService.getBusinessLocations();
+    public ResponseEntity<List<BusinessResponse>> getBusinessMarkers(@RequestParam Long userId) {
+        // 모든 비즈니스 장소에 대해 사용자 즐겨찾기 여부 포함
+        List<BusinessResponse> businessMarkers = mapService.getBusinessLocations(userId);
         return ResponseEntity.ok(businessMarkers);
     }
 
@@ -45,10 +46,10 @@ public class MapController {
         return ResponseEntity.ok(places);
     }
 
-    // 섬 데이터 비즈니스 장소 검색
+    // 섬 데이터 비즈니스 장소 검색 (즐겨찾기 여부 포함)
     @GetMapping("/businesses/search")
     public ResponseEntity<?> searchBusinesses(@RequestParam String keyword) {
-        List<BusinessResponse> places = mapService.searchBusinesses(keyword);
+        List<BusinessResponse> places = mapService.searchBusinesses(keyword); // userId 전달하지 않음
 
         if (places.isEmpty()) {
             return ResponseEntity
@@ -59,11 +60,11 @@ public class MapController {
         return ResponseEntity.ok(places);
     }
 
-    // 카카오 API를 사용한 장소 검색
-    @GetMapping("/kakao/search")
-    public ResponseEntity<List<BusinessResponse>> searchPlaces(@RequestParam String query) {
-        List<BusinessResponse> results = kakaoMapService.findPlacesByKeyword(query);
-        return ResponseEntity.ok(results);
-    }
+//    // 카카오 API를 사용한 장소 검색
+//    @GetMapping("/kakao/search")
+//    public ResponseEntity<List<BusinessResponse>> searchPlaces(@RequestParam String query) {
+//        List<BusinessResponse> results = kakaoMapService.findPlacesByKeyword(query);
+//        return ResponseEntity.ok(results);
+//    }
 }
 

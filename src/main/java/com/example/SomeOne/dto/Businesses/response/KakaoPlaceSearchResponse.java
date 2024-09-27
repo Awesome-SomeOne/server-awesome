@@ -18,6 +18,7 @@ public class KakaoPlaceSearchResponse {
     @Setter
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Document {
+        private String id;
         private String place_name;
         private String address_name;
         private String x;
