@@ -60,11 +60,11 @@ public class MapController {
         return ResponseEntity.ok(places);
     }
 
-//    // 카카오 API를 사용한 장소 검색
-//    @GetMapping("/kakao/search")
-//    public ResponseEntity<List<BusinessResponse>> searchPlaces(@RequestParam String query) {
-//        List<BusinessResponse> results = kakaoMapService.findPlacesByKeyword(query);
-//        return ResponseEntity.ok(results);
-//    }
+    // 카카오 API를 사용한 장소 검색
+    @GetMapping("/kakao/search")
+    public ResponseEntity<List<BusinessResponse>> searchPlaces(@RequestParam String query) {
+        List<BusinessResponse> results = kakaoMapService.findPlacesByKeyword(query);
+        return ResponseEntity.ok(results);
+    }
 }
 
