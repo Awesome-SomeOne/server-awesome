@@ -61,10 +61,11 @@ public class TravelRecords {
     }
 
     public void addRecordImage(RecordImages recordImage) {
-        if (!recordImages.contains(recordImage)) {
-            recordImages.add(recordImage);
-            recordImage.setRecord(this);
+        if (this.recordImages == null) {
+            this.recordImages = new ArrayList<>();
         }
+        this.recordImages.add(recordImage);
+        recordImage.setRecord(this);  // 양방향 관계 설정
     }
 
     public void addReport(Report report) {

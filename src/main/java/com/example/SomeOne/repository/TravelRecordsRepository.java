@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TravelRecordsRepository extends JpaRepository<TravelRecords, Long> {
 
@@ -30,4 +31,6 @@ public interface TravelRecordsRepository extends JpaRepository<TravelRecords, Lo
     @Transactional
     @Query("DELETE FROM TravelRecords tr WHERE tr.plan.planId = :planId")
     void deleteByPlanId(@Param("planId") Long planId);
+
+    Optional<TravelRecords> findFirstByPlanOrderByRecordIdDesc(TravelPlans plan);
 }

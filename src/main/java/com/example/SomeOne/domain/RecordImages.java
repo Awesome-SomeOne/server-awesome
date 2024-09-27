@@ -1,17 +1,16 @@
 package com.example.SomeOne.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@Builder
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class RecordImages {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
@@ -22,8 +21,6 @@ public class RecordImages {
     @JoinColumn(name = "record_id")
     private TravelRecords record;
 
-    // Other fields and methods
-
     public void setRecord(TravelRecords record) {
         if (this.record != null) {
             this.record.getRecordImages().remove(this);
@@ -33,5 +30,4 @@ public class RecordImages {
             record.getRecordImages().add(this);
         }
     }
-
 }

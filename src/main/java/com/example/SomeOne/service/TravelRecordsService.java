@@ -28,6 +28,7 @@ public class TravelRecordsService {
     private final BusinessReviewImagesRepository businessReviewImagesRepository;
     private final TravelPlansRepository travelPlansRepository;
     private final TravelPlaceRepository travelPlaceRepository;
+    private final RecordImagesRepository recordImagesRepository;
     private final UserRepository userRepository;
     private final S3ImageUploadService s3ImageUploadService;
     private final AmazonS3 amazonS3Client;
@@ -82,10 +83,19 @@ public class TravelRecordsService {
         for (MultipartFile image : images) {
             String imageUrl = s3ImageUploadService.saveImage(image);
             imageUrls.add(imageUrl);
+
+            // RecordImages 객체 생성
             RecordImages recordImage = RecordImages.builder()
                     .imageUrl(imageUrl)
+                    .record(record)  // TravelRecords와 관계 설정
                     .build();
-            record.addRecordImage(recordImage);
+
+            recordImage.setRecord(record);  // 상호 참조 설정
+
+            // RecordImages 엔티티 저장
+            recordImagesRepository.save(recordImage);  // 이 부분에서 실제로 저장이 되어야 함
+
+            record.addRecordImage(recordImage);  // TravelRecords에 이미지 추가
         }
         return imageUrls;
     }
