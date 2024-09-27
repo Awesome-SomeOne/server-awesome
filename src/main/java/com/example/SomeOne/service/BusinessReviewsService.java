@@ -1,24 +1,19 @@
 package com.example.SomeOne.service;
 
-import com.example.SomeOne.domain.BusinessReviewImages;
-import com.example.SomeOne.domain.BusinessReviews;
-import com.example.SomeOne.domain.Businesses;
-import com.example.SomeOne.domain.Users;
+import com.example.SomeOne.domain.*;
 import com.example.SomeOne.domain.enums.ReportReason;
 import com.example.SomeOne.dto.Businesses.request.CreateBusinessReviewRequest;
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
+import com.example.SomeOne.dto.TravelRecords.TravelDateImages;
 import com.example.SomeOne.exception.ResourceNotFoundException;
-import com.example.SomeOne.repository.BusinessReviewImagesRepository;
-import com.example.SomeOne.repository.BusinessReviewsRepository;
-import com.example.SomeOne.repository.BusinessesRepository;
-import com.example.SomeOne.repository.UserRepository;
+import com.example.SomeOne.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,32 +25,53 @@ public class BusinessReviewsService {
     private final BusinessesRepository businessRepository;
     private final UserRepository userRepository;
     private final S3ImageUploadService s3ImageUploadService;
+    private final TravelPlaceRepository travelPlaceRepository;
 
-    public BusinessReviewResponse getBusinessReview(Long businessId, Long userId) {
+    // 비즈니스 리뷰 조회 (날짜별 그룹화)
+    public Map<LocalDate, List<BusinessReviewResponse>> getBusinessReviews(Long businessId, Long userId) {
+        // 비즈니스 찾기
         Businesses business = businessRepository.findById(businessId)
                 .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + businessId));
 
+        // 유저 찾기
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        BusinessReviews review = businessReviewsRepository.findByBusinessAndUser(business, user)
-                .orElseThrow(() -> new ResourceNotFoundException("Business review not found for businessId: " + businessId + " and userId: " + userId));
+        // TravelPlace에서 비즈니스 여행 날짜 및 리뷰 찾기
+        List<TravelPlace> travelPlaces = travelPlaceRepository.findByBusinessesAndTravelPlans_User(business, user);
 
-        List<String> imageUrls = businessReviewImagesRepository.findByReview(review)
-                .stream()
-                .map(BusinessReviewImages::getImageUrl)
-                .collect(Collectors.toList());
+        // 날짜별로 리뷰를 그룹화
+        Map<LocalDate, List<BusinessReviewResponse>> groupedReviews = new HashMap<>();
 
-        return BusinessReviewResponse.builder()
-                .id(review.getReviewId())
-                .businessId(review.getBusiness().getBusiness_id())
-                .userId(review.getUser().getUsers_id())
-                .rating(review.getRating())
-                .businessReview(review.getBusinessReview())
-                .imageUrls(imageUrls)
-                .xAddress(business.getX_address())
-                .yAddress(business.getY_address())
-                .build();
+        for (TravelPlace travelPlace : travelPlaces) {
+            // BusinessReviews 조회 (유저와 비즈니스 기준으로 조회)
+            Optional<BusinessReviews> reviewOptional = businessReviewsRepository.findByBusinessAndUser(business, user);
+
+            // 리뷰가 있을 경우 처리
+            if (reviewOptional.isPresent()) {
+                BusinessReviews review = reviewOptional.get();
+
+                // 리뷰 이미지 조회 (날짜 필터링 없이 리뷰 기준으로 조회)
+                List<BusinessReviewImages> reviewImages = businessReviewImagesRepository.findByReview(review);
+
+                // BusinessReviewResponse 생성
+                BusinessReviewResponse reviewResponse = BusinessReviewResponse.builder()
+                        .id(review.getReviewId())
+                        .businessId(review.getBusiness().getBusiness_id())
+                        .userId(review.getUser().getUsers_id())
+                        .rating(review.getRating())
+                        .businessReview(review.getBusinessReview())
+                        .imageUrls(reviewImages.stream().map(BusinessReviewImages::getImageUrl).collect(Collectors.toList()))
+                        .xAddress(business.getX_address())
+                        .yAddress(business.getY_address())
+                        .build();
+
+                // 해당 날짜에 리뷰 추가
+                groupedReviews.computeIfAbsent(travelPlace.getDate(), k -> new ArrayList<>()).add(reviewResponse);
+            }
+        }
+
+        return groupedReviews;
     }
 
     @Transactional

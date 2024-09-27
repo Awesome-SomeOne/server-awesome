@@ -6,6 +6,7 @@ import com.example.SomeOne.domain.*;
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
 import com.example.SomeOne.dto.TravelRecords.Request.CreateTravelRecordRequest;
 import com.example.SomeOne.dto.TravelRecords.Response.TravelRecordResponse;
+import com.example.SomeOne.dto.TravelRecords.TravelDateImages;
 import com.example.SomeOne.exception.ImageStorageException;
 import com.example.SomeOne.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,18 +62,18 @@ public class TravelRecordsService {
         TravelRecords savedRecord = travelRecordsRepository.save(record);
 
         // 비즈니스 리뷰 처리
-        List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(plan, user, savedRecord, request);
+        Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(plan, user);
 
         // TravelRecordResponse 객체 생성 및 반환
         return new TravelRecordResponse(
-                savedRecord.getRecordId(),
-                request.getOneLineReview(),
-                request.getOverallReview(),
+                record.getRecordId(),
+                record.getRecordTitle(),
+                record.getRecordContent(),
                 imageUrls,
-                request.isPublicPrivate(),
-                request.getPlanId(),
-                user.getUsers_id(),
-                businessReviewResponses
+                record.getPublicPrivate(),
+                record.getPlan().getPlanId(),
+                record.getUser().getUsers_id(),
+                businessReviewResponses // 날짜별 그룹화된 리뷰 전달
         );
     }
 
@@ -87,41 +87,50 @@ public class TravelRecordsService {
             // RecordImages 객체 생성
             RecordImages recordImage = RecordImages.builder()
                     .imageUrl(imageUrl)
-                    .record(record)  // TravelRecords와 관계 설정
+                    .record(record)
                     .build();
 
-            recordImage.setRecord(record);  // 상호 참조 설정
-
             // RecordImages 엔티티 저장
-            recordImagesRepository.save(recordImage);  // 이 부분에서 실제로 저장이 되어야 함
+            recordImagesRepository.save(recordImage);
 
             record.addRecordImage(recordImage);  // TravelRecords에 이미지 추가
         }
         return imageUrls;
     }
 
-    // 비즈니스 리뷰 처리 메서드
-    private List<BusinessReviewResponse> handleBusinessReviews(TravelPlans plan, Users user, TravelRecords record, CreateTravelRecordRequest request) {
-        List<BusinessReviewResponse> businessReviewResponses = new ArrayList<>();
+    // 비즈니스 리뷰 처리 메서드 (날짜별로 그룹화된 리뷰 반환)
+    private Map<LocalDate, List<BusinessReviewResponse>> handleBusinessReviews(TravelPlans plan, Users user) {
+        Map<LocalDate, List<BusinessReviewResponse>> groupedReviews = new HashMap<>();
         List<TravelPlace> travelPlaces = travelPlaceRepository.findByTravelPlans(plan);
 
         for (TravelPlace travelPlace : travelPlaces) {
             Businesses business = travelPlace.getBusinesses();
             if (business != null) {
                 Optional<BusinessReviews> existingReview = businessReviewsRepository.findByBusinessAndUser(business, user);
-                BusinessReviews businessReview = existingReview.orElseGet(() -> {
-                    // request가 null인 경우, 기본값으로 비즈니스 리뷰를 생성하지 않고, 이미 존재하는 리뷰를 가져옵니다.
-                    return null;
-                });
+                BusinessReviews businessReview = existingReview.orElse(null);
 
                 if (businessReview != null) {
+                    // 리뷰에 해당하는 이미지들을 조회
                     List<BusinessReviewImages> reviewImages = businessReviewImagesRepository.findByReview(businessReview);
-                    BusinessReviewResponse businessReviewResponse = BusinessReviewResponse.fromEntity(businessReview, reviewImages);
-                    businessReviewResponses.add(businessReviewResponse);
+
+                    // BusinessReviewResponse 생성
+                    BusinessReviewResponse businessReviewResponse = BusinessReviewResponse.builder()
+                            .id(businessReview.getReviewId())
+                            .businessId(businessReview.getBusiness().getBusiness_id())
+                            .userId(businessReview.getUser().getUsers_id())
+                            .rating(businessReview.getRating())
+                            .businessReview(businessReview.getBusinessReview())
+                            .imageUrls(reviewImages.stream().map(BusinessReviewImages::getImageUrl).collect(Collectors.toList()))
+                            .xAddress(business.getX_address())
+                            .yAddress(business.getY_address())
+                            .build();
+
+                    // 해당 날짜에 리뷰 추가 (여행 날짜를 기준으로 그룹화)
+                    groupedReviews.computeIfAbsent(travelPlace.getDate(), k -> new ArrayList<>()).add(businessReviewResponse);
                 }
             }
         }
-        return businessReviewResponses;
+        return groupedReviews;
     }
 
     // 여행 기록 수정
@@ -135,7 +144,7 @@ public class TravelRecordsService {
                 .orElseThrow(() -> new IllegalArgumentException("Travel record not found with id: " + recordId));
 
         // 비즈니스 리뷰 처리
-        List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(record.getPlan(), user, record, request);
+        Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(record.getPlan(), user);
 
         // 여행 기록 수정 및 이미지 저장
         if (request.getOneLineReview() != null) {
@@ -223,7 +232,7 @@ public class TravelRecordsService {
                 record.getPublicPrivate(),
                 record.getPlan().getPlanId(),
                 record.getUser().getUsers_id(),
-                handleBusinessReviews(record.getPlan(), record.getUser(), record, null)
+                handleBusinessReviews(record.getPlan(), record.getUser())
         );
     }
 
@@ -238,14 +247,14 @@ public class TravelRecordsService {
 
         return records.stream()
                 .map(record -> {
-                    List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(record.getPlan(), user, record, null);
+                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(record.getPlan(), user);
                     return new TravelRecordResponse(
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
                             record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
-                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
+                                    .collect(Collectors.toList()),
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
@@ -269,14 +278,14 @@ public class TravelRecordsService {
 
         return records.stream()
                 .map(record -> {
-                    List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(plan, record.getUser(), record, null);
+                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(plan, record.getUser());
                     return new TravelRecordResponse(
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
                             record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
-                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
+                                    .collect(Collectors.toList()),
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
@@ -297,14 +306,14 @@ public class TravelRecordsService {
 
         return records.stream()
                 .map(record -> {
-                    List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(record.getPlan(), user, record, null);
+                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(record.getPlan(), user);
                     return new TravelRecordResponse(
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
                             record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
-                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
+                                    .collect(Collectors.toList()),
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
@@ -328,14 +337,14 @@ public class TravelRecordsService {
 
         return records.stream()
                 .map(record -> {
-                    List<BusinessReviewResponse> businessReviewResponses = handleBusinessReviews(plan, record.getUser(), record, null);
+                    Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(plan, record.getUser());
                     return new TravelRecordResponse(
                             record.getRecordId(),
                             record.getRecordTitle(),
                             record.getRecordContent(),
                             record.getRecordImages().stream()
                                     .map(RecordImages::getImageUrl)
-                                    .collect(Collectors.toList()),  // 이미지 리스트로 변환
+                                    .collect(Collectors.toList()),
                             record.getPublicPrivate(),
                             record.getPlan().getPlanId(),
                             record.getUser().getUsers_id(),
@@ -345,3 +354,4 @@ public class TravelRecordsService {
                 .collect(Collectors.toList());
     }
 }
+

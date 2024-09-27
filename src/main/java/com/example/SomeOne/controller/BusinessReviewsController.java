@@ -11,7 +11,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,12 +30,13 @@ public class BusinessReviewsController {
         return ResponseEntity.ok(businessReviewsService.createOrUpdateBusinessReview(userId, request, images));
     }
 
+    // 비즈니스 리뷰를 날짜별로 그룹화하여 조회
     @GetMapping("/view/{businessId}")
     public ResponseEntity<?> getReview(@PathVariable Long businessId) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
-        BusinessReviewResponse reviewResponse = businessReviewsService.getBusinessReview(businessId, userId);
+        Map<LocalDate, List<BusinessReviewResponse>> reviewResponse = businessReviewsService.getBusinessReviews(businessId, userId);
 
-        if (reviewResponse == null) {
+        if (reviewResponse.isEmpty()) {
             return ResponseEntity.status(404).body("리뷰가 없습니다.");
         }
         return ResponseEntity.ok(reviewResponse);

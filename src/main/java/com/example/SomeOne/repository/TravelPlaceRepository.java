@@ -1,5 +1,6 @@
 package com.example.SomeOne.repository;
 
+import com.example.SomeOne.domain.Businesses;
 import com.example.SomeOne.domain.TravelPlace;
 import com.example.SomeOne.domain.TravelPlans;
 import com.example.SomeOne.domain.Users;
@@ -25,6 +26,8 @@ public interface TravelPlaceRepository extends JpaRepository<TravelPlace, Long> 
             "AND b.business_name LIKE %:businessName%")
     List<TravelPlace> findByUserIdAndBusinessNameContaining(@Param("userId") Long userId, @Param("businessName") String businessName);
     List<TravelPlace> findByTravelPlans(TravelPlans travelPlans);
+    // 비즈니스와 유저를 기반으로 TravelPlace 엔티티 조회
+    List<TravelPlace> findByBusinessesAndTravelPlans_User(Businesses business, Users user);
 }
 
 

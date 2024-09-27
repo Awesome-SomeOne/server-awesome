@@ -1,34 +1,36 @@
 package com.example.SomeOne.dto.TravelRecords.Response;
 
 import com.example.SomeOne.dto.Businesses.response.BusinessReviewResponse;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Getter
-@Builder
+@Setter
 public class TravelRecordResponse {
 
     private Long recordId;
-    private String oneLineReview;
-    private String overallReview;
+    private String recordTitle;
+    private String recordContent;
     private List<String> imageUrls;
     private boolean publicPrivate;
     private Long planId;
     private Long userId;
-    private List<BusinessReviewResponse> businessReviews;
+    private Map<LocalDate, List<BusinessReviewResponse>> businessReviewsByDate;
 
-    public TravelRecordResponse(Long recordId, String oneLineReview, String overallReview, List<String> imageUrls, boolean publicPrivate, Long planId, Long userId, List<BusinessReviewResponse> businessReviews) {
+    @Builder
+    public TravelRecordResponse(Long recordId, String recordTitle, String recordContent, List<String> imageUrls, boolean publicPrivate, Long planId, Long userId, Map<LocalDate, List<BusinessReviewResponse>> businessReviewsByDate) {
         this.recordId = recordId;
-        this.oneLineReview = oneLineReview;
-        this.overallReview = overallReview;
+        this.recordTitle = recordTitle;
+        this.recordContent = recordContent;
         this.imageUrls = imageUrls;
         this.publicPrivate = publicPrivate;
         this.planId = planId;
         this.userId = userId;
-        this.businessReviews = businessReviews;
+        this.businessReviewsByDate = businessReviewsByDate;
     }
 }
-
