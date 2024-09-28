@@ -73,12 +73,14 @@ public class MapService {
         // 키워드로 비즈니스 검색
         List<Businesses> businesses = businessesRepository.findByKeyword(keyword);
 
-        // 각 비즈니스에 대해 즐겨찾기 여부 확인 및 BusinessResponse 생성
+        // 검색 결과가 없을 경우 빈 리스트 반환
+        if (businesses.isEmpty()) {
+            return new ArrayList<>();  // 빈 리스트 반환
+        }
+
+        // 각 비즈니스에 대해 즐겨찾기 여부 확인 로직 제거 및 기본값(false) 설정
         return businesses.stream()
-                .map(business -> {
-                    boolean isFavorite = favoritesRepository.findByUserAndBusiness(user, business).isPresent();
-                    return new BusinessResponse(business, isFavorite);
-                })
+                .map(business -> new BusinessResponse(business, false))  // 즐겨찾기 여부는 기본값(false)로 설정
                 .collect(Collectors.toList());
     }
 

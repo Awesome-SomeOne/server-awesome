@@ -46,16 +46,10 @@ public class MapController {
         return ResponseEntity.ok(places);
     }
 
-    // 섬 데이터 비즈니스 장소 검색 (즐겨찾기 여부 포함)
+    // 섬 데이터 비즈니스 장소 검색
     @GetMapping("/businesses/search")
     public ResponseEntity<?> searchBusinesses(@RequestParam String keyword) {
         List<BusinessResponse> places = mapService.searchBusinesses(keyword); // userId 전달하지 않음
-
-        if (places.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("검색 결과가 없습니다.");
-        }
 
         return ResponseEntity.ok(places);
     }
