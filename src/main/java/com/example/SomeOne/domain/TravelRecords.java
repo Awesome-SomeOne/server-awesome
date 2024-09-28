@@ -21,7 +21,7 @@ public class TravelRecords {
     @JoinColumn(name = "users_id")
     private Users user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private TravelPlans plan;
 

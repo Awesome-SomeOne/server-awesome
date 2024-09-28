@@ -5,6 +5,8 @@ import com.example.SomeOne.dto.TravelRecords.Request.CreateTravelRecordRequest;
 import com.example.SomeOne.dto.TravelRecords.Response.TravelRecordResponse;
 import com.example.SomeOne.service.TravelRecordsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,12 +19,22 @@ public class TravelRecordsController {
 
     private final TravelRecordsService travelRecordsService;
 
-    // 여행 기록 생성
     @PostMapping("/create")
-    public TravelRecordResponse createTravelRecord(@RequestParam("images") List<MultipartFile> images,
-                                                   @ModelAttribute CreateTravelRecordRequest request) {
+    public ResponseEntity<?> createTravelRecord(@RequestParam("images") List<MultipartFile> images,
+                                                @ModelAttribute CreateTravelRecordRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
-        return travelRecordsService.create(images, request, userId);
+        try {
+            TravelRecordResponse response = travelRecordsService.create(images, request, userId);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // Global 예외 처리 핸들러
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
     //여행 기록 수정

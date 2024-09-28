@@ -45,7 +45,13 @@ public class TravelRecordsService {
         TravelPlans plan = travelPlansRepository.findById(request.getPlanId())
                 .orElseThrow(() -> new IllegalArgumentException("Travel plan not found with id: " + request.getPlanId()));
 
-        // 여행 기록 생성
+        // 여행 계획에 이미 여행 기록이 있는지 확인
+        boolean recordExists = travelRecordsRepository.existsByPlan(plan);
+        if (recordExists) {
+            throw new IllegalArgumentException("Travel record already exists for this travel plan.");
+        }
+
+        // 새로운 여행 기록 생성 및 저장
         TravelRecords record = TravelRecords.builder()
                 .user(user)
                 .plan(plan)
@@ -54,32 +60,31 @@ public class TravelRecordsService {
                 .publicPrivate(request.isPublicPrivate())
                 .build();
 
-        // 이미지 저장
+        // 이미지 저장 및 여행 기록 저장
         List<String> imageUrls = saveImages(images, record);
-
-        // 여행 기록 저장
         TravelRecords savedRecord = travelRecordsRepository.save(record);
 
         // 비즈니스 리뷰 처리
         Map<LocalDate, List<BusinessReviewResponse>> businessReviewResponses = handleBusinessReviews(plan, user);
 
-        // TravelRecordResponse 객체 생성 및 반환 (여행 플랜 정보 포함)
+        // 응답 객체 생성 및 반환
         return new TravelRecordResponse(
-                record.getRecordId(),
-                record.getRecordTitle(),
-                record.getRecordContent(),
+                savedRecord.getRecordId(),
+                savedRecord.getRecordTitle(),
+                savedRecord.getRecordContent(),
                 imageUrls,
-                record.getPublicPrivate(),
+                savedRecord.getPublicPrivate(),
                 plan.getPlanId(),
                 plan.getPlan_name(),
                 plan.getStartDate(),
                 plan.getEndDate(),
-                plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 변경
+                plan.getIsland() != null ? plan.getIsland().getName() : null,
                 plan.getStatus(),
-                record.getUser().getUsers_id(),
+                savedRecord.getUser().getUsers_id(),
                 businessReviewResponses
         );
     }
+
 
     // 이미지 저장 메서드
     private List<String> saveImages(List<MultipartFile> images, TravelRecords record) {

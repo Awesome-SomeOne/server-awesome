@@ -32,5 +32,7 @@ public interface TravelRecordsRepository extends JpaRepository<TravelRecords, Lo
     @Query("DELETE FROM TravelRecords tr WHERE tr.plan.planId = :planId")
     void deleteByPlanId(@Param("planId") Long planId);
 
+    boolean existsByPlan(TravelPlans plan);
+
     Optional<TravelRecords> findFirstByPlanOrderByRecordIdDesc(TravelPlans plan);
 }
