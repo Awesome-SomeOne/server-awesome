@@ -21,6 +21,9 @@ public class TravelPlans {
     @OneToMany(mappedBy = "travelPlans")
     private List<TravelPlace> travelPlaces = new ArrayList<>();
 
+    @OneToOne(mappedBy = "plan")
+    private TravelRecords travelRecord;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id")
     private Users user;

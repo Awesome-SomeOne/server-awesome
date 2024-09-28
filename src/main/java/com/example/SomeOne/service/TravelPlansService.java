@@ -7,9 +7,7 @@ import com.example.SomeOne.dto.TravelPlans.response.GetPlansResponse;
 import com.example.SomeOne.dto.TravelPlans.response.SaveTravelResponse;
 import com.example.SomeOne.dto.TravelPlans.response.TravelPlaceResponse;
 import com.example.SomeOne.dto.weather.WeatherNowDTO;
-import com.example.SomeOne.repository.IslandReviewsRepository;
 import com.example.SomeOne.repository.TravelPlansRepository;
-import com.example.SomeOne.repository.TravelRecordsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -48,8 +46,16 @@ public class TravelPlansService {
         Users user = userService.findById(userId);
         List<TravelPlans> planList = travelPlansRepository.findByUserOrderByStartDateDesc(user);
 
-        return planList.stream().map(p -> new GetPlansResponse(p.getPlanId(), p.getPlan_name(), p.getIsland().getAddress(),
-                p.getStartDate(), p.getEndDate(), p.getStatus(), p.getIsland().getImg_url())).collect(Collectors.toList());
+        return planList.stream().map(p -> new GetPlansResponse(
+                p.getPlanId(),
+                p.getPlan_name(),
+                p.getIsland().getAddress(),
+                p.getStartDate(),
+                p.getEndDate(),
+                p.getStatus(),
+                p.getIsland().getImg_url(),
+                p.getTravelRecord() != null ? p.getTravelRecord().getRecordId() : null
+        )).collect(Collectors.toList());
     }
 
     @Transactional

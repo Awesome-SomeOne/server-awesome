@@ -18,4 +18,5 @@ public class GetPlansResponse {
     private LocalDate end_date;
     private TravelStatus status;
     private String img_url;
+    private Long recordId;
 }
