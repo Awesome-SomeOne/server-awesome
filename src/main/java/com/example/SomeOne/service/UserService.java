@@ -70,21 +70,17 @@ public class UserService {
     }
 
     // 액세스 토큰을 사용하여 JWT 발급
-    public LoginResponse issueJwtToken(String accessToken) {
+    public LoginResponse issueJwtToken(String accessToken, String nickname) {
         // 액세스 토큰으로 사용자 정보 가져오기
         SocialUserResponse socialUserResponse = getUserInfoFromKakaoAccessToken(accessToken);
 
-        // 사용자 조회 또는 생성
-        Users user = findOrCreateUserByKakaoId(socialUserResponse.getKakaoUserId(), socialUserResponse, null);
+        // 사용자 조회 또는 생성 (닉네임을 사용하여 사용자 정보 생성)
+        Users user = findOrCreateUserByKakaoId(socialUserResponse.getKakaoUserId(), socialUserResponse, nickname);
 
         // JWT 생성
-//        String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()),
-//                new Date(System.currentTimeMillis() + 3600000)); // 1시간 유효
-        String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()),
-                new Date(System.currentTimeMillis() + 28800000)); // 8시간 유효
+        String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 28800000)); // 8시간 유효
 
-        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()),
-                new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
+        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()), new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
 
         // 사용자 객체에 리프레시 토큰 저장
         user.setRefreshToken(refreshToken);
@@ -290,8 +286,7 @@ public class UserService {
         log.info("No user found for Kakao ID: {}, creating a new user", kakaoUserId);
         Users newUser = Users.builder()
                 .kakaoUserId(String.valueOf(kakaoUserId)) // 카카오 사용자 ID 저장
-                .nickname(socialUserResponse.getNickname()) // 닉네임을 nickname 필드에 저장
-                .username(socialUserResponse.getEmail() != null ? socialUserResponse.getEmail() : "kakao_user_" + kakaoUserId) // 이메일이나 기본 사용자 이름 설정
+                .username(socialUserResponse.getNickname()) // nickname을 username으로 설정
                 .userType(UserType.KAKAO) // 사용자 타입을 KAKAO로 설정
                 .build();
 

@@ -32,15 +32,17 @@ public class UserController {
         return ResponseEntity.ok(accessToken);
     }
 
-    /// 액세스 토큰을 통해 JWT 토큰 발급 API
+    // 액세스 토큰을 통해 JWT 토큰 발급 API
     @PostMapping("/issue-jwt-token")
     public ResponseEntity<LoginResponse> issueJwtToken(
-            @RequestHeader("Authorization") String accessToken) {
+            @RequestHeader("Authorization") String accessToken,
+            @RequestParam("nickname") String nickname) { // 닉네임 파라미터 추가
+
         // "Bearer " 접두어 제거
         accessToken = accessToken.replace("Bearer ", "");
 
-        // 닉네임 없이 JWT 발급
-        LoginResponse loginResponse = userService.issueJwtToken(accessToken);
+        // 닉네임을 이용하여 JWT 발급
+        LoginResponse loginResponse = userService.issueJwtToken(accessToken, nickname);
         return ResponseEntity.ok(loginResponse);
     }
 
@@ -134,6 +136,22 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Failed to validate Kakao access token or retrieve user info.");
         }
+    }
+
+    // 엑세스 토큰과 닉네임으로 유저 닉네임 반환하기
+    @GetMapping("/nickname")
+    public ResponseEntity<String> getNicknameByJwt(@RequestHeader("Authorization") String jwtAccessToken) {
+        // JWT 토큰에서 사용자 ID 추출
+        jwtAccessToken = jwtAccessToken.replace("Bearer ", "");
+        String userId = jwtTokenProvider.getUserIdFromToken(jwtAccessToken);
+
+        // 사용자 ID로 사용자 정보 조회
+        Users user = userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+        // 사용자 닉네임 반환
+        String nickname = user.getNickname();
+        return ResponseEntity.ok(nickname != null ? nickname : "닉네임이 없습니다");
     }
 
 }
