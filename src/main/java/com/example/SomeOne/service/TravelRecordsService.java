@@ -81,7 +81,9 @@ public class TravelRecordsService {
                 plan.getIsland() != null ? plan.getIsland().getName() : null,
                 plan.getStatus(),
                 savedRecord.getUser().getUsers_id(),
-                businessReviewResponses
+                businessReviewResponses,
+                plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
+                plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
         );
     }
 
@@ -186,7 +188,9 @@ public class TravelRecordsService {
                 plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 변경
                 plan.getStatus(),
                 record.getUser().getUsers_id(),
-                businessReviewResponses
+                businessReviewResponses,
+                plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
+                plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
         );
     }
 
@@ -244,6 +248,9 @@ public class TravelRecordsService {
         // 여행 플랜 정보 가져오기
         TravelPlans plan = record.getPlan();
 
+        Double latitude = plan.getIsland() != null ? plan.getIsland().getLatitude() : null;
+        Double longitude = plan.getIsland() != null ? plan.getIsland().getLongitude() : null;
+
         return new TravelRecordResponse(
                 record.getRecordId(),
                 record.getRecordTitle(),
@@ -257,7 +264,9 @@ public class TravelRecordsService {
                 plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
                 plan.getStatus(),
                 record.getUser().getUsers_id(),
-                handleBusinessReviews(plan, record.getUser())
+                handleBusinessReviews(plan, record.getUser()),
+                plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
+                plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
         );
     }
 
@@ -289,7 +298,9 @@ public class TravelRecordsService {
                             plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
                             plan.getStatus(),
                             record.getUser().getUsers_id(),
-                            businessReviewResponses
+                            businessReviewResponses,
+                            plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
+                            plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
                     );
                 })
                 .collect(Collectors.toList());
@@ -322,7 +333,9 @@ public class TravelRecordsService {
                             plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
                             plan.getStatus(),
                             record.getUser().getUsers_id(),
-                            businessReviewResponses
+                            businessReviewResponses,
+                            plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
+                            plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
                     );
                 })
                 .collect(Collectors.toList());
@@ -356,7 +369,9 @@ public class TravelRecordsService {
                             plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
                             plan.getStatus(),
                             record.getUser().getUsers_id(),
-                            businessReviewResponses
+                            businessReviewResponses,
+                            plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
+                            plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
                     );
                 })
                 .collect(Collectors.toList());
@@ -389,7 +404,9 @@ public class TravelRecordsService {
                             plan.getIsland() != null ? plan.getIsland().getName() : null,  // getName()으로 수정
                             plan.getStatus(),
                             record.getUser().getUsers_id(),
-                            businessReviewResponses
+                            businessReviewResponses,
+                            plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
+                            plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
                     );
                 })
                 .collect(Collectors.toList());

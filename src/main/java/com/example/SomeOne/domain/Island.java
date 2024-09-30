@@ -18,7 +18,18 @@ public class Island {
     private String address;
     private String img_url;
 
+    private Double latitude; //위도
+    private Double longitude; //경도
+
     public String getName() {
         return name;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
     }
 }

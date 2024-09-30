@@ -30,12 +30,17 @@ public class TravelRecordResponse {
     private TravelStatus status;
 
     private Long userId;
-    private Map<LocalDate, List<BusinessReviewResponse>> businessReviews; // 날짜별 비즈니스 리뷰
+    private Map<LocalDate, List<BusinessReviewResponse>> businessReviews; //날짜별 비즈니스 리뷰
+
+    private Double latitude;
+    private Double longitude;
+
+
 
     @Builder
     public TravelRecordResponse(Long recordId, String recordTitle, String recordContent, List<String> imageUrls, Boolean publicPrivate,
                                 Long planId, String planName, LocalDate startDate, LocalDate endDate, String islandName, TravelStatus status,
-                                Long userId, Map<LocalDate, List<BusinessReviewResponse>> businessReviews) {
+                                Long userId, Map<LocalDate, List<BusinessReviewResponse>> businessReviews, Double latitude, Double longitude) {
         this.recordId = recordId;
         this.recordTitle = recordTitle;
         this.recordContent = recordContent;
@@ -49,5 +54,7 @@ public class TravelRecordResponse {
         this.status = status;
         this.userId = userId;
         this.businessReviews = businessReviews;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 }
