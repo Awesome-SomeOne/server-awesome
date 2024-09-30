@@ -7,7 +7,10 @@ public class SecurityUtil {
 
     public static Long getAuthenticatedUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return Long.valueOf(authentication.getName());  // JWT에서 추출된 사용자 ID
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new IllegalArgumentException("Authenticated user not found");
+        }
+        return Long.valueOf(authentication.getPrincipal().toString());
     }
 }
 
