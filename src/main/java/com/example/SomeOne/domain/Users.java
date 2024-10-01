@@ -41,6 +41,10 @@ public class Users {
         this.refreshToken = refreshToken;
     }
 
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     // 리프레시 토큰 만료 여부 등을 확인할 수 있는 추가 메서드
     public boolean isRefreshTokenValid(String token) {
         // 토큰 유효성 체크 로직 추가 가능 (예: 만료 시간 확인)
