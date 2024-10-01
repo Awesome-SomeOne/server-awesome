@@ -69,6 +69,8 @@ public class TravelPlaceService {
             }
         }
 
+        travelPlace.getTravelPlans().getTravelPlaces().remove(travelPlace);
+
         travelPlaceRepository.delete(travelPlace);
     }
 
