@@ -46,6 +46,18 @@ public class UserController {
         return ResponseEntity.ok(loginResponse);
     }
 
+    // 엑세스 토큰으로 JWT 발급
+    @PostMapping("/issue-jwt-with-access-token")
+    public ResponseEntity<LoginResponse> issueJwtWithAccessToken(
+            @RequestHeader("Authorization") String accessToken) {
+        // "Bearer " 접두어 제거
+        accessToken = accessToken.replace("Bearer ", "").trim();
+
+        // 엑세스 토큰을 이용하여 JWT 발급
+        LoginResponse loginResponse = userService.issueJwtToken(accessToken);
+        return ResponseEntity.ok(loginResponse);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUser(@PathVariable("id") Long id) {
         return ResponseEntity.ok(userService.getUser(id));

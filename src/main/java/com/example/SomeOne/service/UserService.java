@@ -93,6 +93,32 @@ public class UserService {
                 .build();
     }
 
+    // 엑세스 토큰으로 JWT 발급
+    public LoginResponse issueJwtToken(String accessToken) {
+        // 엑세스 토큰으로 사용자 정보 가져오기
+        SocialUserResponse socialUserResponse = getUserInfoFromKakaoAccessToken(accessToken);
+
+        // 사용자 조회 또는 생성
+        Users user = findOrCreateUserByKakaoId(socialUserResponse.getKakaoUserId(), socialUserResponse, null);
+
+        // JWT 생성 (유효기간 설정)
+        String jwtAccessToken = jwtTokenProvider.generateAccessToken(String.valueOf(user.getUsers_id()),
+                new Date(System.currentTimeMillis() + 28800000)); // 8시간 유효
+
+        String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()),
+                new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
+
+        // 사용자 객체에 리프레시 토큰 저장
+        user.setRefreshToken(refreshToken);
+        userRepository.save(user);
+
+        return LoginResponse.builder()
+                .id(user.getUsers_id())
+                .accessToken(jwtAccessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
     // 새로운 사용자 등록 로직
     private Users joinUser(UserJoinRequest userJoinRequest) {
         Users user = Users.builder()
