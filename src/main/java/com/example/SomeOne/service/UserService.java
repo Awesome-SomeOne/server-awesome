@@ -84,6 +84,7 @@ public class UserService {
 
         // 사용자 객체에 리프레시 토큰 저장
         user.setRefreshToken(refreshToken);
+        user.setNickname(nickname);
         userRepository.save(user);
 
         return LoginResponse.builder()
