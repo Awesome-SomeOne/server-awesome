@@ -166,8 +166,10 @@ public class TravelRecordsService {
         }
         record.setPublicPrivate(request.isPublicPrivate());
 
-        // 기존 이미지 제거 후 새 이미지 저장
-        record.getRecordImages().clear();
+        // 기존 이미지 삭제 (S3 및 데이터베이스에서)
+        deleteImagesFromRecord(record);
+
+        // 새로운 이미지 저장
         List<String> imageUrls = saveImages(newImages, record);
 
         travelRecordsRepository.save(record);
@@ -192,6 +194,18 @@ public class TravelRecordsService {
                 plan.getIsland() != null ? plan.getIsland().getLatitude() : null,  // 위도 가져오기
                 plan.getIsland() != null ? plan.getIsland().getLongitude() : null  // 경도 가져오기
         );
+    }
+
+    // 기존 이미지 삭제 메서드
+    private void deleteImagesFromRecord(TravelRecords record) {
+        // S3에서 이미지 삭제
+        for (RecordImages image : record.getRecordImages()) {
+            deleteImageFromS3(image.getImageUrl());
+        }
+
+        // 데이터베이스에서 이미지 삭제
+        record.getRecordImages().clear();
+        recordImagesRepository.deleteAllByRecord(record);  // 연관된 이미지를 모두 삭제
     }
 
     // 여행 기록 삭제
