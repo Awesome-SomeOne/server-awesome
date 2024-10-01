@@ -32,8 +32,8 @@ public class TravelPlans {
     private LocalDate endDate;
     private TravelStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "island_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "island_id", nullable = false)
     private Island island;
 
     @Builder
