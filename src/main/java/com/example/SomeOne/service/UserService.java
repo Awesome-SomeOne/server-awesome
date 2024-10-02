@@ -107,7 +107,7 @@ public class UserService {
                 new Date(System.currentTimeMillis() + 28800000)); // 8시간 유효
 
         String refreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(user.getUsers_id()),
-                new Date(System.currentTimeMillis() + 1209600000)); // 14일 유효
+                new Date(System.currentTimeMillis() +  5184000000L));
 
         // 사용자 객체에 리프레시 토큰 저장
         user.setRefreshToken(refreshToken);
