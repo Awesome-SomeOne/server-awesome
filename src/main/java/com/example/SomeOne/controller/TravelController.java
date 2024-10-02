@@ -80,17 +80,18 @@ public class TravelController {
     }
 
     @PostMapping("/addPlace")
-    public ResponseEntity<Void> addPlace(@RequestBody AddPlaceRequest request) {
+    public ResponseEntity<AddPlaceResponse> addPlace(@RequestBody AddPlaceRequest request) {
         Long userId = getAuthenticatedUserId();
-        travelPlaceService.addPlace(userId, request.getTravelPlanId(), request.getBusinessId(), request.getDate());
-        return ResponseEntity.ok().build();
+        AddPlaceResponse placeId = travelPlaceService.addPlace(userId, request.getTravelPlanId(), request.getBusinessId(), request.getDate());
+        return ResponseEntity.ok(placeId);
     }
 
     @PostMapping("/addManyPlace")
-    public ResponseEntity<Void> addManyPlace(@RequestBody AddManyPlaceRequest request) {
+    public ResponseEntity<AddManyPlaceResponse> addManyPlace(@RequestBody AddManyPlaceRequest request) {
         Long userId = getAuthenticatedUserId();
-        travelPlaceService.addManyPlaces(userId, request.getTravelPlanId(), request.getBusinessIds(), request.getDate());
-        return ResponseEntity.ok().build();
+        AddManyPlaceResponse placeIds = travelPlaceService.addManyPlaces(userId,
+                request.getTravelPlanId(), request.getBusinessIds(), request.getDate());
+        return ResponseEntity.ok(placeIds);
     }
 
     @DeleteMapping("/deletePlace")
