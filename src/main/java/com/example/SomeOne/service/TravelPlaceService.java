@@ -5,6 +5,8 @@ import com.example.SomeOne.domain.TravelPlace;
 import com.example.SomeOne.domain.TravelPlans;
 import com.example.SomeOne.domain.Users;
 import com.example.SomeOne.dto.TravelPlans.request.UpdatePlaceRequest;
+import com.example.SomeOne.dto.TravelPlans.response.AddManyPlaceResponse;
+import com.example.SomeOne.dto.TravelPlans.response.AddPlaceResponse;
 import com.example.SomeOne.repository.TravelPlaceRepository;
 import com.example.SomeOne.repository.TravelPlansRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class TravelPlaceService {
     private final UserService userService;
 
     @Transactional
-    public void addPlace(Long userId, Long travelPlanId, Long businessId, LocalDate date) {
+    public AddPlaceResponse addPlace(Long userId, Long travelPlanId, Long businessId, LocalDate date) {
         TravelPlans travelPlan = travelPlansRepository.findById(travelPlanId).orElseThrow(
                 () -> new IllegalArgumentException());
         Businesses business = businessesService.findById(businessId);
@@ -37,14 +39,22 @@ public class TravelPlaceService {
         TravelPlace travelPlace = TravelPlace.builder().travelPlans(travelPlan).businesses(business)
                 .date(date).placeOrder(size + 1).build();
 
-        travelPlaceRepository.save(travelPlace);
+        TravelPlace place = travelPlaceRepository.save(travelPlace);
+
+        AddPlaceResponse response = new AddPlaceResponse(place.getPlace_id());
+        return response;
     }
 
     @Transactional
-    public void addManyPlaces(Long userId, Long travelPlanId, List<Long> businessIds, LocalDate date) {
+    public AddManyPlaceResponse addManyPlaces(Long userId, Long travelPlanId, List<Long> businessIds, LocalDate date) {
+        List<AddPlaceResponse> placeResponses = new ArrayList<>();
+
         for (Long businessId : businessIds) {
-            addPlace(userId, travelPlanId, businessId, date);
+            AddPlaceResponse response = addPlace(userId, travelPlanId, businessId, date);
+            placeResponses.add(response);
         }
+
+        return new AddManyPlaceResponse(placeResponses);
     }
 
     @Transactional
